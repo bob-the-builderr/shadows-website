@@ -1,0 +1,1285 @@
+<!doctype html>
+<html lang="en" class="intro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shadows — Media &amp; Advertising</title>
+<meta name="description" content="Shadows is a media and advertising agency: photography, video production and ad campaigns that make your brand unmistakable.">
+<meta name="theme-color" content="#08080A">
+<!-- how a shared link looks (WhatsApp, Facebook, X, LinkedIn). When the site has its domain, make the
+     image an absolute URL (https://<domain>/assets/og.jpg) and add og:url and a canonical link. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Shadows">
+<meta property="og:title" content="Shadows — Media &amp; Advertising">
+<meta property="og:description" content="We move in silence. Photography, video production and ad campaigns that make your brand unmistakable.">
+<meta property="og:image" content="assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Shadows owl, wings spread, above the Shadows Media &amp; Advertising wordmark">
+<meta name="twitter:card" content="summary_large_image">
+<!-- for search engines: who this is (only what is true today; add url, logo, contact and sameAs
+     links to the social accounts once they are known) -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "Organization", "name": "Shadows Media & Advertising", "alternateName": "Shadows",
+ "slogan": "We move in silence.",
+ "description": "A media and advertising agency: photography, video production, ad campaigns and brand identity.",
+ "knowsAbout": ["Photography", "Video production", "Advertising campaigns", "Brand identity"]}
+</script>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+/* SHADOWS visual identity: colours and type follow the brand deck
+   (70% Shadow Black, 20% Signature Red, 10% Soft White / Ash Grey; one bold sans family) */
+:root{
+  --void:#08080A;      /* Shadow Black — backgrounds */
+  --ruby:#E11827;      /* Signature Red — headlines and accents */
+  --garnet:#910814;    /* Deep Crimson — shadows and dramatic gradients */
+  --bone:#F7F5F5;      /* Soft White — main text */
+  --ash:#AFAAAF;       /* Ash Grey — secondary text */
+  --rule:rgba(225,24,39,.3);
+  --perch:50vh;
+  --header:64px;
+  --display:"Archivo",system-ui,sans-serif;   /* set wide and heavy for headlines */
+  --text:"Archivo",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--void);color:var(--bone);overflow:hidden;overscroll-behavior:none}
+body{font-family:var(--text);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;touch-action:none}
+
+/* atmosphere, all of it behind the owl and the content (the deck: effects never cover the logo
+   or the content): the deck's own film-dust texture, a light grain, and a measured red glow */
+/* every full-screen layer is its own composited layer, painted once: nothing that moves ever makes
+   the browser repaint them (that alone took the page from 5 to 60 frames a second on integrated graphics) */
+.texture{position:fixed;inset:0;z-index:0;pointer-events:none;background:url(assets/texture.webp) center/cover no-repeat;opacity:.42;will-change:transform}
+.glow{position:fixed;inset:0;z-index:0;pointer-events:none;transform-origin:50% calc(var(--perch) * .56);will-change:transform,opacity;
+  background:
+    radial-gradient(38vmin 34vmin at 50% calc(var(--perch) * .56), rgba(225,24,39,.18), transparent 72%),
+    radial-gradient(80vw 22vh at 50% var(--perch), rgba(145,8,20,.3), transparent 70%);}
+.grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.05;background:url(assets/grain.png);will-change:transform}
+
+#owl{position:fixed;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;display:block}
+
+header{position:fixed;top:0;left:0;right:0;height:var(--header);z-index:6;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,3vw,32px)}
+/* the primary wordmark, taken from the identity deck (lens O, MEDIA & ADVERTISING) */
+.wordmark{display:block;line-height:0}
+.wordmark img{display:block;height:36px;width:auto}
+.wordmark:focus-visible{outline:1px solid var(--bone);outline-offset:6px}
+.signoff{display:block;width:30px;height:auto;margin:34px auto 0}
+.signoff + .fine{margin-top:10px}
+.head-cta{font:600 14px/1 var(--text);color:var(--bone);text-decoration:none;padding:9px 0;border-bottom:2px solid var(--ruby)}
+.head-cta:hover{border-color:var(--bone)}
+.head-cta:focus-visible{outline:1px solid var(--bone);outline-offset:4px}
+
+/* the end of the world, behind everything: embers rising through a red haze, ash coming down */
+#embers{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+
+/* the branch the owl perches on: a charred limb with embers glowing in its cracks, in front of the
+   owl's body and tail; the owl's toes and talons are a layer in front of it, gripping it. Its
+   offshoots grow down to the tabs, each ending in an ember that lights up for the open tab. */
+.limb,.twigs,.fire{position:fixed;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;display:block;will-change:transform}
+.fire{inset:auto 0 auto 0}
+.talons{position:fixed;left:0;top:0;z-index:5;pointer-events:none;transform-origin:0 0;will-change:transform}
+.buds{position:fixed;inset:0;z-index:5;pointer-events:none}
+.buds i{position:absolute;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;
+  background:radial-gradient(circle,#7a2a18 0 30%,#2a0705 70%);box-shadow:0 0 4px rgba(225,24,39,.35);transition:background .4s,box-shadow .4s,transform .4s}
+.buds i.on{background:radial-gradient(circle,#fff1dc 0 18%,#ff9a5a 36%,#e11827 70%);box-shadow:0 0 10px 3px rgba(255,80,40,.75),0 0 24px 6px rgba(225,24,39,.35);transform:scale(1.25)}
+.tree-fx{position:fixed;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;overflow:visible}
+.tree-fx polyline{fill:none;stroke:#ffb08a;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+
+.tabs{position:fixed;left:0;right:0;top:calc(var(--perch) + var(--tail, 14px));z-index:2;display:flex;justify-content:center;gap:clamp(16px,3.4vw,40px);padding:0 12px;transition:opacity .6s}
+.tabs button{all:unset;cursor:pointer;position:relative;padding:10px 2px 8px;font:500 14px/1 var(--text);letter-spacing:.01em;color:var(--ash);transition:color .3s}
+.tabs button:hover{color:var(--bone)}
+.tabs button[aria-selected="true"]{color:var(--bone)}
+.tabs button:focus-visible{outline:1px solid var(--bone);outline-offset:4px}
+/* opening: the limb grows in from the left; the offshoots, their embers and the tabs follow */
+.limb{transition:clip-path 1.1s cubic-bezier(.2,.7,.2,1)}
+.twigs,.buds,.tabs,.fire{transition:opacity .7s}
+.intro .limb{clip-path:inset(0 100% 0 0)}
+.intro.grown .limb{clip-path:inset(0 0 0 0)}
+.intro .tabs,.intro .twigs,.intro .buds,.intro .hint,.intro .talons,.intro .fire{opacity:0}
+.talons{transition:opacity .9s .3s}
+
+/* content */
+.stage{position:fixed;left:0;right:0;top:calc(var(--perch) + var(--tail, 14px) + 56px);bottom:0;z-index:1}
+.panel{position:absolute;inset:0;overflow-y:auto;scrollbar-width:none;padding:6px 20px 92px;visibility:hidden;touch-action:pan-y}
+.panel::-webkit-scrollbar{display:none}
+.panel.is-active,.panel.is-entering{visibility:visible}
+.inner{max-width:900px;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center}
+/* headlines: bold, short, high impact */
+h1,h2{font-family:var(--display);font-weight:800;font-stretch:125%;font-size:clamp(24px,3.3vw,42px);line-height:1.08;letter-spacing:-.015em;color:var(--bone);max-width:20ch;text-wrap:balance}
+.lede{margin-top:16px;font-size:clamp(15px,1.3vw,17px);color:var(--ash);max-width:48ch;text-wrap:pretty}
+.actions{margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.btn{--cut:10px;position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 24px;font:700 15px/1 var(--text);letter-spacing:.01em;color:var(--bone);text-decoration:none;background:var(--ruby);
+  clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut));transition:background .2s}
+.btn:hover{background:var(--garnet)}
+.btn.ghost{background:rgba(225,24,39,.65)}
+.btn.ghost::before{content:"";position:absolute;inset:1px;z-index:-1;background:var(--void);
+  clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}
+.btn.ghost:hover{background:var(--ruby)}
+.btn:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--bone)}
+.btn.ghost:focus-visible::before{inset:3px}
+
+.services{list-style:none;margin-top:30px;display:grid;grid-template-columns:repeat(4,1fr);width:min(100%,920px);text-align:left}
+.services li{padding:2px 18px 2px 16px;border-left:1px solid var(--rule)}
+.services h3{font:700 16px/1.3 var(--text);color:var(--bone)}
+.services p{margin-top:8px;font-size:14px;line-height:1.5;color:var(--ash)}
+
+.work{list-style:none;margin-top:26px;width:min(100%,760px)}
+.work li{display:grid;grid-template-columns:1.1fr 1.3fr auto;align-items:baseline;gap:16px;padding:15px 4px;border-top:1px solid var(--rule);text-align:left}
+.work li:last-child{border-bottom:1px solid var(--rule)}
+.w-name{font:800 15px/1.3 var(--display);font-stretch:115%;color:var(--bone)}
+.w-what{font-size:15px;color:var(--ash)}
+.w-result{font-size:15px;font-weight:700;color:var(--ruby);text-align:right;white-space:nowrap}
+
+.fine{margin-top:34px;font-size:13px;color:#615c62}
+
+/* glowing edge of the reveal as the wings sweep down */
+.edge{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;filter:drop-shadow(0 0 6px rgba(225,24,39,.9))}
+.edge polyline,.edge line{fill:none;stroke:var(--ruby);stroke-width:1.5}
+
+body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-index:2;pointer-events:none;background:linear-gradient(rgba(8,8,10,0),var(--void) 72%);will-change:transform}
+.hint{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;color:var(--ash);pointer-events:none;white-space:nowrap;transition:opacity .4s;will-change:opacity}
+.chev{width:9px;height:9px;border-left:1.5px solid var(--ruby);border-top:1.5px solid var(--ruby);transform:rotate(45deg);will-change:transform}
+.hint.back .chev{transform:rotate(225deg)}
+.hint.fresh .chev{animation:nudge 1.8s ease-in-out infinite}
+@keyframes nudge{50%{transform:translateY(-5px) rotate(45deg)}}
+
+@media (max-width:760px){
+  .services{grid-template-columns:1fr 1fr;row-gap:20px}
+  .services li{padding-right:10px}
+}
+@media (max-width:560px){
+  .tabs{gap:14px}
+  .tabs button{font-size:13px}
+  .wordmark img{height:28px}
+  .work li{grid-template-columns:1fr auto;gap:4px 12px}
+  .w-what{grid-column:1/-1;grid-row:2;font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){
+  .hint.fresh .chev{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="texture" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="glow" aria-hidden="true"></div>
+<canvas id="embers" aria-hidden="true"></canvas>
+<canvas id="owl" aria-hidden="true"></canvas>
+
+<header>
+  <a class="wordmark" href="#" data-go="0"><img src="assets/wordmark.webp" width="640" height="173" alt="Shadows Media &amp; Advertising"></a>
+  <a class="head-cta" href="#" data-go="4">Start a project</a>
+</header>
+
+<canvas class="twigs" id="twigs" aria-hidden="true"></canvas>
+<canvas class="limb" id="limb" aria-hidden="true"></canvas>
+<canvas class="fire" id="fire" aria-hidden="true"></canvas>
+<img class="talons" id="talons" src="assets/owl-talons.webp" alt="" aria-hidden="true">
+<div class="buds" id="buds" aria-hidden="true"></div>
+<svg class="tree-fx" id="treeFx" aria-hidden="true"></svg>
+
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button type="button" role="tab" id="t0" aria-controls="p0" aria-selected="true">Home</button>
+  <button type="button" role="tab" id="t1" aria-controls="p1" aria-selected="false">Services</button>
+  <button type="button" role="tab" id="t2" aria-controls="p2" aria-selected="false">Work</button>
+  <button type="button" role="tab" id="t3" aria-controls="p3" aria-selected="false">Studio</button>
+  <button type="button" role="tab" id="t4" aria-controls="p4" aria-selected="false">Contact</button>
+</nav>
+
+<main class="stage" id="stage">
+  <section class="panel" id="p0" role="tabpanel" aria-labelledby="t0">
+    <div class="inner">
+      <h1>We move in silence.</h1>
+      <p class="lede">Shadows is a media and advertising agency. We shoot, produce and run the campaigns that make your brand unmistakable.</p>
+      <div class="actions">
+        <a class="btn" href="#" data-go="4">Start a project</a>
+        <a class="btn ghost" href="#" data-go="2">See our work</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="p1" role="tabpanel" aria-labelledby="t1">
+    <div class="inner">
+      <h2>What we make</h2>
+      <ul class="services">
+        <li><h3>Photography</h3><p>Product, fashion and campaign shoots in dramatic, controlled light.</p></li>
+        <li><h3>Video production</h3><p>Ads, reels and brand films, from script to final cut.</p></li>
+        <li><h3>Ad campaigns</h3><p>Paid social and digital ads planned around one clear goal.</p></li>
+        <li><h3>Brand identity</h3><p>Logos and visual systems built to stay unmistakable.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="panel" id="p2" role="tabpanel" aria-labelledby="t2">
+    <div class="inner">
+      <h2>Selected work</h2>
+      <p class="lede">We share our portfolio directly. Tell us your industry and we'll send you the projects closest to your brand.</p>
+      <div class="actions">
+        <a class="btn" href="#" data-go="4">Request our portfolio</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="p3" role="tabpanel" aria-labelledby="t3">
+    <div class="inner">
+      <h2>Make an impact. Stay unmistakable.</h2>
+      <p class="lede">Bold, cinematic and confident work from one crew of directors, photographers, designers and media buyers. You work with the people behind the camera, not a chain of account managers.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="p4" role="tabpanel" aria-labelledby="t4">
+    <div class="inner">
+      <h2>Ready to make an impact?</h2>
+      <p class="lede">Tell us about your brand and your goal. We reply within one working day.</p>
+      <div class="actions">
+        <a class="btn" href="#">Email us</a>
+        <a class="btn ghost" href="#">Message on WhatsApp</a>
+      </div>
+      <img class="signoff" src="assets/lens.png" width="141" height="155" alt="">
+      <p class="fine">© 2026 Shadows Media &amp; Advertising</p>
+    </div>
+  </section>
+
+  <svg class="edge" id="edge" aria-hidden="true"><polyline id="edgeLine" points="" opacity="0"/></svg>
+</main>
+
+<div class="hint fresh" id="hint" aria-hidden="true"><span class="chev"></span><span id="hintText"></span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const PANELS = [...document.querySelectorAll('.panel')];
+const TABS = [...document.querySelectorAll('.tabs button')];
+const NAMES = TABS.map(b => b.textContent.trim());
+const docEl = document.documentElement;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const DEBUG = /[?&]debug(&|$)/.test(location.search);    // ?debug: the testing hooks below (__t, __slow, __shadows)
+const coarse = matchMedia('(pointer: coarse)').matches;
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, u) => a + (b - a) * u;
+const ease = {
+  lin: t => t,
+  outCubic: t => 1 - Math.pow(1 - t, 3),
+  inOutCubic: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+  inOutSine: t => -(Math.cos(Math.PI * t) - 1) / 2,
+  outSine: t => Math.sin(Math.PI * t / 2),
+  inQuad: t => t * t,
+  inSine: t => 1 - Math.cos(Math.PI * t / 2),
+};
+
+/* ------------------------------------------------------------------ */
+/*  The owl. Everything in it is the client's own artwork. Its body,   */
+/*  head and talons are the perched image and never change; its head  */
+/*  is a layer of its own that turns to look at the mouse. Its open    */
+/*  wings are cut from the client's spread-wing image, each a layer    */
+/*  hinged at its shoulder behind the body: hidden at rest, they swing  */
+/*  out, beat and fold back on every tab change, their outer feathers  */
+/*  trailing the motion.                                               */
+/*  Units: px of a 1366-wide frame around the owl, 100 to a world unit. */
+/* ------------------------------------------------------------------ */
+const small = innerWidth < 760 || coarse;                     // phones get lighter images
+const S0 = 768 / 1337, OX0 = 516 * S0, OY0 = 170 * S0;          // the client's perched image px -> frame px
+const orig = (x, y) => [x * S0 + OX0, y * S0 + OY0];
+const ART = {
+  rest: small ? 'assets/owl-rest-m.webp' : 'assets/owl-rest.webp', head: 'assets/owl-head.webp',
+  unit: 100,                                                    // frame px per world unit
+  restBox: [330, 80, 690, 990],                                 // the rest image, in the client's image
+  axis: 683, top: orig(0, 105)[1], grip: orig(0, 905)[1], tail: orig(0, 1039)[1],   // ear tips, the branch's middle under the toes, tail tip
+  talonsBox: [515, 832, 320, 140],                              // the talons layer, in the client's image
+  feet: 142 * S0, bodyW: 620 * S0,
+  headBox: [400, 92, 550, 370],                                 // the head layer, in the client's image
+  // eyes, in head-layer px: pupil centres, the moving disc (pupil + glint) and its core;
+  // the brow's lower edge, which nothing in the eye ever crosses
+  eyes: [[184, 179], [368, 179]], iris: [17, 16], core: [9, 9],
+  brow: [[[155, 144], [235, 189]], [[391, 144], [311, 189]]],
+  // the wings, in the spread-wing image's px: each one's box and the shoulder it hinges on; that image
+  // is brought onto this owl by scale k (its ear tips onto these) and lowered dy onto the shoulders
+  wings: [
+    { src: small ? 'assets/owl-wing-l-m.webp' : 'assets/owl-wing-l.webp', box: [19, 140, 694, 454], hinge: [688, 352], dir: -1 },
+    { src: small ? 'assets/owl-wing-r-m.webp' : 'assets/owl-wing-r.webp', box: [961, 140, 692, 454], hinge: [985.4, 352], dir: 1 },
+  ],
+  spread: { axis: 836.7, ear: 170, k: 1.1, dy: 46 },
+};
+const fromSpread = (x, y) => [(x - ART.spread.axis) * ART.spread.k + 673, (y - ART.spread.ear) * ART.spread.k + 107 + ART.spread.dy];
+const CY = (ART.top + ART.grip) / 2;
+const W = (x, y) => [(x - ART.axis) / ART.unit, -(y - CY) / ART.unit];   // video px -> world
+const OWL = {
+  H: (ART.grip - ART.top) / ART.unit, W: ART.bodyW / ART.unit,
+  GRIP_Y: W(0, ART.grip)[1], TAIL: (ART.tail - ART.grip) / ART.unit, FEET: ART.feet / ART.unit,
+  EYE_Y: W(0, orig(0, ART.headBox[1] + ART.eyes[0][1])[1])[1],
+};
+
+const HEAD_VS = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+/* moving eyes: the pupil with its inner ring, and the pupil core with the glint, are re-sampled
+   from the artwork with an offset, so they slide toward the pointer and tuck under the rings.
+   Nothing above the brow line ever moves. */
+const HEAD_FS = `
+  uniform sampler2D map; uniform vec2 texSize; uniform vec2 eyeC[2]; uniform vec3 brow[2];
+  uniform vec2 iris; uniform vec2 core; uniform vec2 offIris[2]; uniform vec2 offCore[2]; uniform float fade;
+  uniform float lid;                                            // the blink: 0 open .. 1 shut
+  varying vec2 vUv;
+  const vec4 SOCKET = vec4(.03, 0., .004, 1.);
+  vec4 tex(vec2 p) { return texture2D(map, vec2(p.x / texSize.x, 1. - p.y / texSize.y)); }
+  float ell(vec2 p, vec2 c, vec2 r) { float e = length((p - c) / r); return 1. - smoothstep(1. - 1.2 / r.x, 1. + .6 / r.x, e); }
+  float below(vec2 p, vec3 L) { return clamp(dot(L, vec3(p, 1.)) + .5, 0., 1.); }
+  void main() {
+    vec2 p = vec2(vUv.x * texSize.x, (1. - vUv.y) * texSize.y);
+    vec4 col = tex(p);
+    for (int i = 0; i < 2; i++) {
+      float m = ell(p, eyeC[i], iris) * below(p, brow[i]);
+      if (m > 0.) {
+        vec2 q = p - offIris[i];
+        vec4 e = tex(q);
+        float cm = ell(q, eyeC[i], core);
+        if (cm > 0.) { vec2 s = q - offCore[i]; e = mix(e, mix(SOCKET, tex(s), ell(s, eyeC[i], core)), cm); }
+        e = mix(SOCKET, e, ell(q, eyeC[i], iris) * below(q, brow[i]));
+        col = mix(col, vec4(e.rgb, max(col.a, e.a)), m);
+      }
+      // a blink: a dark crystal lid comes down from under the brow over the eye, its edge catching the light
+      if (lid > .01) {
+        float R = 25., area = ell(p, eyeC[i], vec2(R, R * .95)) * below(p, brow[i]);
+        float edge = eyeC[i].y - R + 2. * R * lid;
+        float shut = smoothstep(edge + 1.3, edge - 1.3, p.y) * area;
+        col.rgb = mix(col.rgb, vec3(.17, .012, .022) + .05 * (p.y - eyeC[i].y + R) / (2. * R), shut);
+        col.rgb += vec3(.55, .06, .07) * exp(-pow((p.y - edge) / 1.1, 2.)) * area * .7;
+      }
+    }
+    col.a *= fade;
+    if (col.a < .02) discard;
+    gl_FragColor = col;
+  }`;
+let gl = null;
+try { gl = buildOwl(); } catch (e) { console.warn('WebGL owl unavailable', e); $('#owl').style.display = 'none'; }
+
+function buildOwl() {
+  if (!window.THREE) throw new Error('three.js did not load');
+  const canvas = $('#owl');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x000000, 0);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
+  camera.position.set(0, 0, 40);
+
+  const owlRoot = new THREE.Group(); scene.add(owlRoot);    // placed + scaled by layout()
+  const owl = new THREE.Group(); owlRoot.add(owl);           // hops a little while flapping
+  const headG = new THREE.Group(); owl.add(headG);
+
+  // a flat layer of the client's image (box in its px), placed where it belongs on the owl
+  const layer = (box, order, z = 0) => {
+    const [x0, y0, w, h] = box;
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w * S0 / ART.unit, h * S0 / ART.unit),
+      new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, opacity: 1 }));
+    m.position.set(...W(...orig(x0 + w / 2, y0 + h / 2)), z);
+    m.renderOrder = order; m.visible = false; owl.add(m);
+    return m;
+  };
+  // at rest: the whole perched owl, folded wings and all
+  const rest = layer(ART.restBox, 1);
+
+  // the wings, behind the body. Each hangs from its shoulder: the plane is moved so the shoulder is
+  // its origin, and the group turns. The outer feathers bend a little behind the motion (bend).
+  const wingVS = `uniform float bend; uniform float dir; varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      vec3 p = position;
+      float a = dir * bend * smoothstep(.6, 4.2, length(p.xy)), c = cos(a), s = sin(a);
+      p.xy = vec2(c * p.x - s * p.y, s * p.x + c * p.y);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.);
+    }`;
+  const wingFS = `uniform sampler2D map; uniform float face; varying vec2 vUv;
+    void main() {
+      vec4 c = texture2D(map, vUv);
+      if (c.a < .01) discard;
+      c.rgb *= mix(.38, 1., face);                              // turned away from us, the crystal darkens
+      gl_FragColor = c;
+    }`;
+  const toW = (ART.spread.k * S0) / ART.unit;                   // spread-image px -> world
+  const wings = ART.wings.map(w => {
+    const [bx, by, bw, bh] = w.box, [hx, hy] = w.hinge;
+    const geo = new THREE.PlaneGeometry(bw * toW, bh * toW, 40, 14);
+    geo.translate((bx + bw / 2 - hx) * toW, -(by + bh / 2 - hy) * toW, 0);
+    const u = { map: { value: null }, bend: { value: 0 }, dir: { value: w.dir }, face: { value: 1 } };
+    const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({ uniforms: u, vertexShader: wingVS, fragmentShader: wingFS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    mesh.renderOrder = .5;
+    const group = new THREE.Group();
+    group.position.set(...W(...orig(...fromSpread(hx, hy))), -.05);
+    group.add(mesh); group.visible = false; owl.add(group);
+    return { group, u, dir: w.dir, src: w.src };
+  });
+
+  const eyeU = {
+    map: { value: null }, texSize: { value: new THREE.Vector2(ART.headBox[2], ART.headBox[3]) },
+    eyeC: { value: [new THREE.Vector2(), new THREE.Vector2()] },
+    brow: { value: [new THREE.Vector3(), new THREE.Vector3()] },
+    iris: { value: new THREE.Vector2(...ART.iris) }, core: { value: new THREE.Vector2(...ART.core) },
+    offIris: { value: [new THREE.Vector2(), new THREE.Vector2()] }, offCore: { value: [new THREE.Vector2(), new THREE.Vector2()] }, fade: { value: 1 }, lid: { value: 0 },
+  };
+
+  const loader = new THREE.TextureLoader();
+  const tex = src => new Promise(res => loader.load(src, t => { t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; res(t); }, undefined, () => res(null)));
+  const headImg = new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = ART.head; });
+  // two stages: the owl at rest first, then its wings
+  const setMap = (m, t) => { m.material.map = t; m.material.needsUpdate = true; m.visible = true; };
+  const restReady = Promise.all([tex(ART.rest), headImg]).then(([r, head]) => {
+    if (!r) return false;
+    setMap(rest, r);
+    if (head) buildHead(head);
+    return true;
+  });
+  let moving = false;                                           // true once the wings are in
+  const motionReady = restReady.then(ok => ok && Promise.all(wings.map(w => tex(w.src)))).then(ts => {
+    if (!ts || ts.some(t => !t)) return false;
+    ts.forEach((t, i) => { wings[i].u.map.value = t; });
+    return (moving = true);
+  });
+
+  // head: its own layer on a relief (domed face, sunken eyes, beak forward, ear tufts back)
+  function buildHead(img) {
+    const [hx0, hy0, hw, hh] = ART.headBox;
+    const c = document.createElement('canvas'); c.width = hw; c.height = hh;
+    const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
+    const px = g.getImageData(0, 0, hw, hh).data;
+    const t = new THREE.CanvasTexture(c); t.minFilter = THREE.LinearFilter; t.generateMipmaps = false;
+    const [hcx, hcy] = W(...orig(hx0 + hw / 2, hy0 + hh / 2));
+    headG.position.set(hcx, hcy, .25);
+    headG.userData.baseY = hcy;
+    const gw = hw * S0 / ART.unit, gh = hh * S0 / ART.unit, q = gw / 1.96;   // q: this head against the size the relief was shaped for
+    const geo = new THREE.PlaneGeometry(gw, gh, 140, 96);
+    const P = geo.attributes.position, UV = geo.attributes.uv;
+    const bump = (x, y, cx, cy, r) => Math.exp(-((x - cx) ** 2 + (y - cy) ** 2) / (r * q * q));
+    const local = (ix, iy) => { const [x, y] = W(...orig(ix, iy)); return [x - hcx, y - hcy]; };   // client px -> head
+    const [elx, ely] = local(hx0 + ART.eyes[0][0], hy0 + ART.eyes[0][1]), [, beakY] = local(673, 360), [, faceY] = local(673, 300);
+    for (let i = 0; i < P.count; i++) {
+      const x = P.getX(i), y = P.getY(i);
+      const ix = Math.round(UV.getX(i) * (hw - 1)), iy = Math.round((1 - UV.getY(i)) * (hh - 1));
+      const k = (iy * hw + ix) * 4, lum = Math.max(px[k], px[k + 1], px[k + 2]) / 255;
+      let z = .32 * q * Math.pow(Math.max(0, 1 - (x / (.82 * q)) ** 2 - ((y - faceY) / (.82 * q)) ** 2), .7);   // domed face
+      z -= .22 * q * smoothstep(.6 * q, 1.0 * q, Math.abs(x)) * smoothstep(-.1 * q, .55 * q, y);              // ear tufts swept back
+      z -= .06 * q * (bump(x, y, elx, ely, .02) + bump(x, y, -elx, ely, .02));                                // eye sockets
+      z += .1 * q * bump(x, y, 0, beakY, .006);                                                                // beak
+      z += .03 * q * lum;                                                                                      // facets catch the light
+      P.setZ(i, z);
+    }
+    eyeU.map.value = t;
+    ART.eyes.forEach((e, i) => {
+      eyeU.eyeC.value[i].set(e[0], e[1]);
+      const [[x1, y1], [x2, y2]] = ART.brow[i];
+      let nx = -(y2 - y1), ny = x2 - x1; const len = Math.hypot(nx, ny); nx /= len; ny /= len;
+      if (ny < 0) { nx = -nx; ny = -ny; }                                                           // normal points down, away from the brow
+      eyeU.brow.value[i].set(nx, ny, -(nx * x1 + ny * y1) - 3);                                     // 3px safety margin under the brow
+    });
+    const head = new THREE.Mesh(geo, new THREE.ShaderMaterial({ uniforms: eyeU, vertexShader: HEAD_VS, fragmentShader: HEAD_FS, transparent: true }));
+    head.renderOrder = 2;
+    headG.add(head);
+  }
+
+  // s: how far the wings are spread (0 folded behind the body .. 1 wide open); beat: their stroke
+  // around the shoulder (radians, up is positive); bend: how far the outer feathers trail
+  function setWings(s, beat, bend) {
+    if (!moving) s = 0;
+    const fold = 1 - s;
+    for (const w of wings) {
+      w.group.visible = s > .004;
+      w.group.rotation.set(0, w.dir * fold * 1.42, w.dir * (beat - fold * 1.0));   // droop, then swing behind the body
+      w.group.scale.setScalar(.82 + .18 * s);
+      w.u.bend.value = bend; w.u.face.value = Math.cos(fold * 1.42);
+    }
+  }
+
+  return { renderer, scene, camera, owlRoot, owl, headG, eyeU, restReady, motionReady, setWings };
+}
+
+function smoothstep(a, b, v) { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); }
+
+/* one tab change. Keys: [second, value, easing]. The wings open (0–.55s, under the finger while
+   scrolling), beat twice with a bird's rhythm, a slower lift and a quick, hard stroke down (the
+   second smaller), settle, and fold back behind the body. */
+const SPREAD = [[0, 0], [.55, 1, 'inOutSine'], [1.75, 1], [2.45, 0, 'inOutSine']];
+const BEAT = [[0, 0], [.55, 0], [.82, .5, 'outSine'], [1.0, -.36, 'inQuad'], [1.26, .3, 'outSine'], [1.42, -.22, 'inQuad'], [1.66, 0, 'outSine'], [2.45, 0]];
+const DUR = { flap: 2.45, fade: .45 };
+function keyed(keys, t) {
+  if (t <= 0) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) {
+    const [t1, f1, e] = keys[i];
+    if (t <= t1) { const [t0, f0] = keys[i - 1]; return lerp(f0, f1, ease[e || 'lin']((t - t0) / (t1 - t0))); }
+  }
+  return keys[keys.length - 1][1];
+}
+
+/* ------------------------------------------------------------------ */
+/*  background: the end of the world. Embers rise through a red haze    */
+/*  and ash drifts down, behind everything; the wings blow them away.  */
+/* ------------------------------------------------------------------ */
+const embers = (() => {
+  const c = $('#embers'), g = c.getContext('2d');
+  let W = 1, H = 1, R = 1, prev = 0, push = null, density = 1;
+  const parts = [];
+  const sprite = (rgb, r) => {
+    const s = document.createElement('canvas'); s.width = s.height = r * 2;
+    const x = s.getContext('2d'), gr = x.createRadialGradient(r, r, 0, r, r, r);
+    gr.addColorStop(0, `rgba(${rgb},1)`); gr.addColorStop(.16, `rgba(${rgb},.75)`);
+    gr.addColorStop(.45, `rgba(${rgb},.16)`); gr.addColorStop(1, `rgba(${rgb},0)`);
+    x.fillStyle = gr; x.fillRect(0, 0, r * 2, r * 2);
+    return s;
+  };
+  const RED = sprite('225,24,39', 32), HOT = sprite('255,96,52', 32), SOFT = sprite('160,10,22', 64);
+  const rand = (a, b) => a + Math.random() * (b - a);
+  function make(p, anywhere) {
+    const r = Math.random();
+    p.kind = r < .76 ? 0 : r < .88 ? 1 : 2;                  // 0 ember, 1 out-of-focus ember, 2 ash
+    p.x = rand(-20, W + 20);
+    // everything comes down from the sky: burning debris and ash raining on the world
+    p.y = anywhere ? rand(0, H) : -rand(8, 90);
+    p.vx = rand(-12, 12);
+    p.vy = p.kind === 2 ? rand(10, 28) : rand(22, 80) * (p.kind === 1 ? .45 : 1);
+    p.s = p.kind === 0 ? (Math.random() < .07 ? rand(3, 4.6) : rand(.8, 2.6)) : p.kind === 1 ? rand(8, 24) : rand(1.2, 2.8);
+    p.a = p.kind === 0 ? rand(.55, 1) : p.kind === 1 ? rand(.05, .14) : rand(.12, .3);
+    p.ph = rand(0, 6.3); p.fl = rand(4, 13); p.hot = Math.random() < .3;
+    p.life = anywhere ? rand(0, 4) : 0; p.max = rand(8, 18);
+    p.rot = rand(0, 6.3); p.spin = rand(-2.5, 2.5); p.ix = 0; p.iy = 0;
+    return p;
+  }
+  function resize(w, h) {
+    R = Math.min(devicePixelRatio || 1, 1.5); W = w; H = h;
+    c.width = Math.round(w * R); c.height = Math.round(h * R);
+    const n = Math.round(clamp(w * h / 4200, 90, 420) * (reduce ? .35 : 1) * density);
+    while (parts.length < n) parts.push(make({}, true));
+    parts.length = n;
+  }
+  // a beat of the wings: air pushed out from (x, y)
+  function gust(x, y, power) { if (!reduce) push = { x, y, power }; }
+  function step(now) {
+    const dt = Math.min(.05, (now - (prev || now)) / 1000), t = now / 1000, k = reduce ? .3 : 1;
+    prev = now;
+    g.setTransform(R, 0, 0, R, 0, 0);
+    g.clearRect(0, 0, W, H);
+    // a fire glow low on the horizon, breathing
+    const fl = .78 + .12 * Math.sin(t * 1.3) + .07 * Math.sin(t * 3.9 + 1);
+    const gr = g.createLinearGradient(0, H, 0, H * .35);
+    gr.addColorStop(0, `rgba(170,10,22,${(.62 * fl).toFixed(3)})`);
+    gr.addColorStop(.35, `rgba(110,5,14,${(.24 * fl).toFixed(3)})`);
+    gr.addColorStop(1, 'rgba(8,8,10,0)');
+    g.fillStyle = gr; g.fillRect(0, H * .35, W, H * .65);
+    const sky = g.createLinearGradient(0, 0, 0, H * .3);                  // and a burnt sky above
+    sky.addColorStop(0, `rgba(110,6,16,${(.2 * fl).toFixed(3)})`); sky.addColorStop(1, 'rgba(8,8,10,0)');
+    g.fillStyle = sky; g.fillRect(0, 0, W, H * .3);
+    g.globalCompositeOperation = 'lighter';
+    for (const p of parts) {
+      p.life += dt;
+      // rising heat with a slow turbulence; the wings' push fades within a second
+      const turb = Math.sin(p.y * .011 + t * .8 + p.ph) * 14 + Math.sin(p.x * .006 - t * .45) * 9;
+      if (push) {
+        const dx = p.x - push.x, dy = p.y - push.y, d = Math.hypot(dx, dy) + 40, f = push.power * 2600 / d;
+        p.ix += dx / d * f; p.iy += dy / d * f;
+      }
+      const damp = Math.pow(.12, dt); p.ix *= damp; p.iy *= damp;
+      p.x += (p.vx + turb + p.ix) * dt * k;
+      p.y += (p.vy + p.iy) * dt * k;
+      p.rot += p.spin * dt;
+      if (p.y < -140 || p.y > H + 60 || p.x < -80 || p.x > W + 80 || p.life > p.max) { make(p, false); continue; }
+      const fade = Math.min(1, p.life / 1.2) * Math.min(1, (p.max - p.life) / 2);
+      if (p.kind === 2) {                                       // ash: a small grey flake turning over
+        const cs = Math.cos(p.rot) * R, sn = Math.sin(p.rot) * R;
+        g.setTransform(cs, sn, -sn * .45, cs * .45, p.x * R, p.y * R);
+        g.globalAlpha = p.a * fade;
+        g.fillStyle = '#AFAAAF';
+        g.fillRect(-p.s, -p.s, p.s * 2, p.s * 2);
+        g.setTransform(R, 0, 0, R, 0, 0);
+        continue;
+      }
+      const flick = .62 + .38 * Math.sin(t * p.fl + p.ph);
+      if (p.kind === 1) {
+        const r = p.s * 2;
+        g.globalAlpha = p.a * fade * (.8 + .2 * flick);
+        g.drawImage(SOFT, p.x - r, p.y - r, r * 2, r * 2);
+        continue;
+      }
+      const r = p.s * 7;
+      g.globalAlpha = p.a * fade * flick;
+      g.drawImage(p.hot ? HOT : RED, p.x - r, p.y - r, r * 2, r * 2);
+      g.globalAlpha = Math.min(1, p.a * fade * flick * 1.2);
+      g.fillStyle = p.hot ? '#ffd2b8' : '#ff8a8e';
+      g.fillRect(p.x - p.s * .45, p.y - p.s * .45, p.s * .9, p.s * .9);
+    }
+    push = null;
+    g.globalAlpha = 1;
+    g.globalCompositeOperation = 'source-over';
+  }
+  function setDensity(k) { density = k; resize(W, H); }
+  return { resize, step, gust, setDensity };
+})();
+
+/* ------------------------------------------------------------------ */
+/*  the branch: a charred limb across the screen, curving and tapering */
+/*  like wood, with bark, knots and embers glowing in its cracks; the  */
+/*  owl's talons grip it. Offshoots grow out of it down to every tab,  */
+/*  each ending in an ember. A light runs from the owl's feet to the   */
+/*  tab it is opening. Drawn once per layout on two canvases.          */
+/* ------------------------------------------------------------------ */
+/* the fire on the branch: flames at a few spots along the limb (never under the owl), white-yellow
+   at the root, orange, then red at the tips; smoke rising slowly; now and then a spark. The flames
+   lean away when the owl beats its wings. */
+const fire = (() => {
+  const c = $('#fire'), g = c.getContext('2d');
+  let W = 1, H = 1, R = 1, spots = [], prev = 0, push = null, wind = 0, density = 1;
+  const parts = [];
+  const sprite = (stops, r) => {
+    const s = document.createElement('canvas'); s.width = s.height = r * 2;
+    const x = s.getContext('2d'), gr = x.createRadialGradient(r, r, 0, r, r, r);
+    stops.forEach(([o, col]) => gr.addColorStop(o, col));
+    x.fillStyle = gr; x.fillRect(0, 0, r * 2, r * 2); return s;
+  };
+  const HOT = sprite([[0, 'rgba(255,248,220,1)'], [.22, 'rgba(255,200,90,.9)'], [.5, 'rgba(255,110,30,.4)'], [1, 'rgba(200,30,10,0)']], 32);
+  const RED = sprite([[0, 'rgba(255,120,40,.9)'], [.4, 'rgba(225,40,20,.45)'], [1, 'rgba(140,8,8,0)']], 32);
+  const SMOKE = sprite([[0, 'rgba(92,78,72,.5)'], [.6, 'rgba(60,48,44,.18)'], [1, 'rgba(40,30,28,0)']], 48);
+  const BED = sprite([[0, 'rgba(255,150,60,.55)'], [.35, 'rgba(240,70,20,.28)'], [1, 'rgba(160,10,10,0)']], 64);
+  const rand = (a, b) => a + Math.random() * (b - a);
+  // the canvas is only a band around the branch (flames and smoke never go far), so each frame clears
+  // and composites a fraction of the screen
+  let top = 0;
+  function layout(w, h, list) {
+    R = Math.min(devicePixelRatio || 1, 1.25); W = w;
+    const ys = list.map(s => s.y);
+    top = Math.max(0, Math.floor((ys.length ? Math.min(...ys) : h / 2) - 230));
+    H = Math.min(h - top, Math.ceil((ys.length ? Math.max(...ys) : h / 2) + 70 - top));
+    c.style.top = top + 'px'; c.style.height = H + 'px'; c.style.bottom = 'auto';
+    c.width = Math.round(w * R); c.height = Math.round(H * R);
+    spots = list.map(s => ({ ...s, y: s.y - top, acc: [0, 0, 0], ph: rand(0, 6.3) }));
+    parts.length = 0;
+  }
+  function gust(x, y, p) { if (!reduce) push = { x, y: y - top, p }; }
+  function emit(s, kind) {
+    const sc = Math.max(.75, s.r / 11);                         // flames as big as the wood that burns
+    if (kind === 0) {
+      // across the whole burning stretch, hotter and taller toward its middle, every tongue different
+      const o = rand(-.5, .5), mid = 1 - Math.abs(o) * 1.3, big = Math.random() < .18;
+      parts.push({ k: 0, x: s.x + o * s.w * 1.15, y: s.y + rand(-.1, .35) * s.r, vx: rand(-7, 7), vy: -rand(16, 36) * s.power * (.6 + .6 * mid) * (big ? 1.5 : 1),
+                   life: rand(.3, .75) * (big ? 1.4 : 1), age: 0, s0: rand(4, 8) * sc * (.6 + .5 * mid) * (big ? 1.45 : 1), ph: rand(0, 6.3), lean: 0 });
+    }
+    else if (kind === 1) parts.push({ k: 1, x: s.x + rand(-.3, .3) * s.w, y: s.y - rand(10, 24) * sc, vx: rand(-4, 4), vy: -rand(12, 24),
+                                      life: rand(2, 3.6), age: 0, s0: rand(8, 14) * sc, ph: rand(0, 6.3), lean: 0 });
+    else parts.push({ k: 2, x: s.x + rand(-.4, .4) * s.w, y: s.y, vx: rand(-30, 30), vy: -rand(70, 150), life: rand(.6, 1.3), age: 0, s0: rand(.8, 1.6), ph: rand(0, 6.3), lean: 0 });
+  }
+  function step(now) {
+    const dt = Math.min(.05, (now - (prev || now)) / 1000), t = now / 1000, k = reduce ? .25 : 1;
+    prev = now;
+    g.setTransform(R, 0, 0, R, 0, 0);
+    g.clearRect(0, 0, W, H);
+    if (!spots.length) return;
+    for (const s of spots) {                                    // flames all the time, smoke steadily, a spark now and then
+      s.acc[0] += dt * 75 * s.power * Math.max(.8, s.w / 30) * k * density; s.acc[1] += dt * 4 * k * (density > .6 ? 1 : 0); s.acc[2] += dt * 1.6 * s.power * k * density;
+      for (let j = 0; j < 3; j++) while (s.acc[j] >= 1) { s.acc[j] -= 1; emit(s, j); }
+    }
+    wind = Math.sin(t * .4) * 6 + Math.sin(t * 1.3) * 3;
+    // the glowing bed of each fire, flickering
+    g.globalCompositeOperation = 'lighter';
+    for (const s of spots) {
+      const fl = .75 + .15 * Math.sin(t * 9 + s.ph) + .1 * Math.sin(t * 23 + s.ph * 2);
+      const r = s.w * 1.1 * (.9 + .1 * fl);
+      g.globalAlpha = .85 * fl; g.drawImage(BED, s.x - r, s.y + s.r * .2 - r * .55, r * 2, r * 1.1);
+    }
+    // smoke first (it darkens what is behind it), then the flames and sparks on top, added as light
+    for (let pass = 0; pass < 2; pass++) {
+      g.globalCompositeOperation = pass ? 'lighter' : 'source-over';
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const p = parts[i];
+        if (pass === 0) {                                         // move everything once
+          p.age += dt;
+          if (p.age >= p.life) { parts.splice(i, 1); continue; }
+          if (push) { const dx = p.x - push.x, d = Math.abs(dx) + 60; p.lean += Math.sign(dx) * push.p * 900 / d; }
+          p.lean *= Math.pow(.25, dt);
+          const sway = Math.sin(p.age * 9 + p.ph) * (p.k === 0 ? 14 : 5);
+          p.x += (p.vx + sway + wind + p.lean) * dt; p.y += p.vy * dt;
+          if (p.k === 0) p.vy -= 55 * dt; else if (p.k === 2) p.vy += 60 * dt; else p.vx *= .99;
+          if (p.k !== 1) continue;
+        } else if (p.k === 1) continue;
+        const u = p.age / p.life;
+        if (p.k === 1) {
+          const r = p.s0 * (1 + 2.2 * u);
+          g.globalAlpha = .16 * smoothstep(0, .2, u) * (1 - u);
+          g.drawImage(SMOKE, p.x - r, p.y - r, r * 2, r * 2);
+        } else if (p.k === 0) {
+          // a tongue of flame: narrow and tall, hot at the root, thinning and reddening as it rises
+          const r = p.s0 * (1 - .6 * u) * Math.min(1, u / .1 + .25), st = 1.3 + 1.2 * u;
+          g.globalAlpha = Math.pow(1 - u, 1.6) * .85;
+          g.drawImage(HOT, p.x - r * .8, p.y - r * st, r * 1.6, r * st * 2);
+          g.globalAlpha = Math.sin(Math.PI * Math.min(1, u * 1.2)) * .6;
+          g.drawImage(RED, p.x - r, p.y - r * st * 1.2, r * 2, r * st * 2.4);
+        } else {
+          g.globalAlpha = (1 - u) * (.6 + .4 * Math.sin(p.age * 40 + p.ph));
+          g.fillStyle = '#ffe2b0'; g.fillRect(p.x - p.s0 / 2, p.y - p.s0 / 2, p.s0, p.s0);
+          g.drawImage(RED, p.x - 4, p.y - 4, 8, 8);
+        }
+      }
+    }
+    push = null;
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  }
+  function setDensity(k) { density = k; }
+  return { layout, step, gust, setDensity };
+})();
+
+const tree = (() => {
+  const limbC = $('#limb'), twigC = $('#twigs'), fx = $('#treeFx'), budBox = $('#buds');
+  let pulses = [], buds = [], on = 0;
+  const P = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const seq = seed => () => ((seed = seed * 16807 % 2147483647) - 1) / 2147483646;
+  const bez = (a, b, c, d, t) => { const u = 1 - t; return [0, 1].map(k => u * u * u * a[k] + 3 * u * u * t * b[k] + 3 * u * t * t * c[k] + t * t * t * d[k]); };
+  const bezPts = (a, b, c, d, step) => {                        // evenly spaced points along a cubic
+    const raw = []; for (let i = 0; i <= 200; i++) raw.push(bez(a, b, c, d, i / 200));
+    const out = [raw[0]]; let acc = 0;
+    for (let i = 1; i < raw.length; i++) { acc += Math.hypot(raw[i][0] - raw[i - 1][0], raw[i][1] - raw[i - 1][1]); if (acc >= step) { out.push(raw[i]); acc = 0; } }
+    if (out[out.length - 1] !== raw[raw.length - 1]) out.push(raw[raw.length - 1]);
+    return out;
+  };
+  // the colour of charred wood across the limb: k = -1 underside .. +1 top. Lit from above, and
+  // from below by the fire, red
+  const shade = (k, fireAmt = 1) => {
+    const L = Math.max(0, Math.cos((k - .4) * Math.PI / 1.7)), fire = smoothstep(-.55, -1, k) * fireAmt, edge = smoothstep(.72, 1, Math.abs(k));
+    const c = [14 + 38 * L * .9, 8 + 24 * L * .9, 6 + 17 * L * .9].map(v => v * (1 - .5 * edge));
+    return `rgb(${(c[0] + 70 * fire) | 0},${(c[1] + 8 * fire) | 0},${(c[2] + 6 * fire) | 0})`;
+  };
+  // a tapered round limb along pts (radius per point), shaded, barked, with ember cracks
+  function tube(g, pts, rad, rand, o = {}) {
+    const n = pts.length; if (n < 2) return;
+    const T = [], N = [];
+    for (let i = 0; i < n; i++) {
+      const a = pts[Math.max(0, i - 2)], b = pts[Math.min(n - 1, i + 2)];
+      let dx = b[0] - a[0], dy = b[1] - a[1]; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+      let nx = dy, ny = -dx; if (ny > 0 || (Math.abs(ny) < 1e-6 && nx < 0)) { nx = -nx; ny = -ny; }   // the "up" side
+      T.push([dx, dy]); N.push([nx, ny]);
+    }
+    const off = (i, k) => [pts[i][0] + N[i][0] * rad[i] * k, pts[i][1] + N[i][1] * rad[i] * k];
+    const band = (k0, k1) => {
+      g.beginPath();
+      for (let i = 0; i < n; i++) { const p = off(i, k1); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }
+      for (let i = n - 1; i >= 0; i--) { const p = off(i, k0); g.lineTo(p[0], p[1]); }
+      g.closePath();
+    };
+    // silhouette with a soft shadow, then the round shading in thin bands
+    g.save(); g.shadowColor = 'rgba(0,0,0,.65)'; g.shadowBlur = 8; g.shadowOffsetY = 3;
+    band(-1, 1); g.fillStyle = '#0c0605'; g.fill(); g.restore();
+    const B = 18, fireAmt = smoothstep(2, 9, rad[Math.floor(n / 3)]);   // thin twigs catch little of the fire's light
+    for (let b = 0; b < B; b++) { const k0 = -1 + 2 * b / B, k1 = -1 + 2 * (b + 1) / B; band(k0, k1 + .01); g.fillStyle = shade((k0 + k1) / 2, fireAmt); g.fill(); }
+    // the tip: a rounded end
+    const e = n - 1; g.beginPath(); g.arc(pts[e][0], pts[e][1], rad[e], 0, 7); g.fillStyle = shade(.2, fireAmt); g.fill();
+    // texture inside the silhouette: bark fibres, knots, cracks with embers in them
+    g.save(); band(-1, 1); g.clip();
+    let len = 0; for (let i = 1; i < n; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    const fibres = len * (o.bark || 1.1);
+    for (let f = 0; f < fibres; f++) {
+      const i = Math.floor(rand() * n), k = (rand() * 2 - 1) * .95, p = off(i, k), l = (3 + rand() * 10) * Math.min(1.6, .5 + rad[i] / 10);
+      const dark = rand() < .62;
+      g.strokeStyle = dark ? `rgba(0,0,0,${.35 + rand() * .35})` : `rgba(${90 + rand() * 40},${52 + rand() * 20},${36 + rand() * 14},${.12 + rand() * .2})`;
+      g.lineWidth = .5 + rand() * (rad[i] > 6 ? 1.3 : .6);
+      const w = (rand() - .5) * 1.2;
+      g.beginPath(); g.moveTo(p[0] - T[i][0] * l / 2, p[1] - T[i][1] * l / 2);
+      g.quadraticCurveTo(p[0] + N[i][0] * w, p[1] + N[i][1] * w, p[0] + T[i][0] * l / 2, p[1] + T[i][1] * l / 2); g.stroke();
+    }
+    for (const kn of o.knots || []) {                              // knots: a dark eye with a lighter rim
+      const i = Math.min(n - 1, Math.floor(kn.at * n)), p = off(i, kn.k), a = Math.atan2(T[i][1], T[i][0]), r = rad[i];
+      g.save(); g.translate(p[0], p[1]); g.rotate(a);
+      g.beginPath(); g.ellipse(0, 0, r * .42, r * .26, 0, 0, 7); g.fillStyle = 'rgba(60,36,26,.55)'; g.fill();
+      g.beginPath(); g.ellipse(0, 0, r * .28, r * .15, 0, 0, 7); g.fillStyle = 'rgba(0,0,0,.85)'; g.fill();
+      g.restore();
+    }
+    g.globalCompositeOperation = 'lighter';
+    const cracks = Math.round(len / (o.crackEvery || 85));
+    for (let c = 0; c < cracks; c++) {
+      let i = Math.floor(rand() * n); if (rad[i] < 3.5) continue;          // embers only in wood thick enough to hold them
+      let k = -.8 + rand() * 1.2; const L = (6 + rand() * 20) * Math.min(1.4, .5 + rad[i] / 14);
+      const line = []; let s = 0;
+      while (s < L && i < n - 2) { k += (rand() - .5) * .35; const p = off(i, Math.max(-.9, Math.min(.8, k))); line.push(p); s += 2 + rand() * 5; i += 1 + Math.floor(rand() * 3); }
+      if (line.length < 2) continue;
+      const path = () => { g.beginPath(); line.forEach((p, j) => j ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); };
+      const heat = .45 + rand() * .55;
+      g.shadowColor = `rgba(255,70,30,${heat})`; g.shadowBlur = 7; g.strokeStyle = `rgba(255,${70 + 50 * heat | 0},40,${.55 * heat})`; g.lineWidth = 1.4; path(); g.stroke();
+      g.shadowBlur = 0; g.strokeStyle = `rgba(255,214,170,${.55 * heat})`; g.lineWidth = .55; path(); g.stroke();
+    }
+    g.restore();
+    // the fire's light along the underside, flickering along the length (thick wood only), a faint sheen on top
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (let i = 1; i < n; i++) {
+      const lit = rad[i] < 3 ? .8 : .5 + .5 * Math.sin(i * .07 + Math.sin(i * .013) * 3);   // twigs: a steady thin edge
+      if (lit < .25) continue;
+      const a = off(i - 1, -.94), b = off(i, -.94);
+      g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]);
+      g.strokeStyle = `rgba(225,30,30,${(lit * (rad[i] < 3 ? .22 : .28 * smoothstep(3, 10, rad[i]))).toFixed(3)})`;
+      g.lineWidth = Math.max(.7, Math.min(2.2, rad[i] * .18)); g.stroke();
+    }
+    g.beginPath(); for (let i = 0; i < n; i++) { const p = off(i, .62); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }
+    g.strokeStyle = 'rgba(255,200,170,.05)'; g.lineWidth = Math.max(1, rad[Math.floor(n / 2)] * .25); g.shadowBlur = 0; g.stroke();
+    g.restore();
+  }
+  function fit(c, W, H) {
+    const R = Math.min(devicePixelRatio || 1, 2);
+    c.width = Math.round(W * R); c.height = Math.round(H * R);
+    const g = c.getContext('2d'); g.setTransform(R, 0, 0, R, 0, 0); g.clearRect(0, 0, W, H);
+    return g;
+  }
+  // perch: where the branch's middle runs under the talons; feet: half their span; opx: screen px
+  // per px of the client's image (so the branch is always as thick as the talons can hold)
+  function build(perch, W, H, feet, opx) {
+    const rand = seq(11), cx = W / 2, rF = 30 * opx, Z = feet * 1.25;
+    // centre line: thicker toward the trunk on the left, level and flat under the talons, rising a
+    // little toward the trunk and drooping a little at the thin end, with a slow natural waver
+    const yAt = x => {
+      const d = x - cx, a = Math.max(0, Math.abs(d) - Z), w = smoothstep(0, 90, a);
+      const lean = d < 0 ? -.045 * a : -.012 * a + .00005 * a * a;
+      return perch + w * (lean + 4 * Math.sin(d * .011 + 1.3) + 2.2 * Math.sin(d * .029 + .4)) * Math.min(1, W / 900 + .3);
+    };
+    const rAt = x => rF * (1.42 - .82 * clamp((x + 60) / (W + 120))) * (1 + .05 * Math.sin(x * .021));
+    const main = []; for (let x = -70; x <= W + 70; x += 3) main.push([x, yAt(x)]);
+    const tg = fit(twigC, W, H), lg = fit(limbC, W, H);
+    let pl = '', bh = '';
+    buds = [];
+    TABS.forEach((b, i) => {
+      const r = b.getBoundingClientRect(), tx = r.left + r.width / 2, ty = r.top + 1;
+      const side = tx < cx ? -1 : 1;
+      let fxp = cx + (tx - cx) * .55;
+      if (Math.abs(fxp - cx) < Z + 18) fxp = cx + side * (Z + 18 + rand() * 10);
+      const fy = yAt(fxp), r0 = rAt(fxp) * .72;
+      // the offshoot leaves the limb's underside, sweeps out and down, and turns toward its tab
+      const a = [fxp, fy + rAt(fxp) * .35], c1 = [fxp + side * (rAt(fxp) * 1.6 + 10), fy + rAt(fxp) * 1.1 + 6];
+      const c2 = [tx + (fxp - tx) * .12 + side * 6 * (rand() - .5), ty - (ty - fy) * .5], d = [tx, ty - 3];
+      const pts = bezPts(a, c1, c2, d, 2.5);
+      const rad = pts.map((p, j) => { const t = j / (pts.length - 1); return Math.max(1.4, r0 * Math.pow(1 - t, .8) + 1.5 * t) * (1 + .35 * Math.max(0, 1 - t * 6)); });
+      tube(tg, pts, rad, rand, { bark: 1, crackEvery: 150 });
+      // a spur or two off the offshoot
+      for (let s = 0; s < 1 + (rand() < .55); s++) {
+        const j = Math.floor(pts.length * (.3 + rand() * .35)), p = pts[j];
+        const ang = Math.atan2(pts[j + 1][1] - p[1], pts[j + 1][0] - p[0]) + side * (rand() < .5 ? .9 : -.7) * (.8 + rand() * .4);
+        const L = 9 + rand() * 14, e = [p[0] + Math.cos(ang) * L, p[1] + Math.sin(ang) * L];
+        const sp = bezPts(p, [p[0] + Math.cos(ang) * L * .4, p[1] + Math.sin(ang) * L * .4], [e[0], e[1] - 2], e, 2);
+        tube(tg, sp, sp.map((_, k) => Math.max(.7, rad[j] * .5 * (1 - k / sp.length))), rand, { bark: .4, crackEvery: 1e9 });
+      }
+      bh += `<i style="left:${tx.toFixed(1)}px;top:${(ty - 3).toFixed(1)}px"></i>`;
+      // the light's way: from the talons along the limb to the fork, then down the offshoot
+      const way = []; for (let x = cx; side < 0 ? x >= fxp : x <= fxp; x += side * 6) way.push([x, yAt(x)]);
+      pl += `<polyline points="${P([...way, ...pts.filter((_, k) => k % 2 === 0)])}"/>`;
+    });
+    // a few bare twigs of its own, up from the limb, away from the talons and the offshoots
+    for (const u of [-.42, -.27, .31, .44]) {
+      const x0 = cx + u * W; if (Math.abs(x0 - cx) < Z + 40 || x0 < 20 || x0 > W - 20) continue;
+      const y0 = yAt(x0) - rAt(x0) * .5, L = (26 + rand() * 30) * Math.min(1, W / 900 + .35), lean = (rand() - .5) * 1.1 + (u < 0 ? -.35 : .35);
+      const e = [x0 + Math.sin(lean) * L, y0 - Math.cos(lean) * L];
+      const sp = bezPts([x0, y0 + 4], [x0 + Math.sin(lean) * L * .2, y0 - L * .45], [e[0] - Math.sin(lean) * 6, e[1] + 6], e, 2.5);
+      tube(lg, sp, sp.map((_, k) => Math.max(.9, rAt(x0) * .32 * (1 - k / sp.length) + .8)), rand, { bark: .6, crackEvery: 1e9 });
+    }
+    tube(lg, main, main.map(p => rAt(p[0])), rand, {
+      knots: [{ at: .12, k: .1 }, { at: .3, k: -.3 }, { at: .7, k: .25 }, { at: .86, k: -.2 }], bark: 1.3, crackEvery: 55 });
+    // where it burns: a few spots along the limb, never near the talons; the wood glows around each,
+    // brightest on top where the flames sit, with hot chips of ember in it
+    const spots = [];
+    for (const u of W < 640 ? [-.36, .3] : [-.41, -.22, .21, .39]) {
+      const x = cx + u * W; if (Math.abs(x - cx) < Z + 40 || x < 30 || x > W - 30) continue;
+      spots.push({ x, y: yAt(x) - rAt(x) * .78, w: rAt(x) * 2.3, r: rAt(x), power: .7 + rand() * .3 });
+    }
+    lg.save(); lg.globalCompositeOperation = 'source-atop';           // paint only on the wood already drawn
+    for (const s of spots) {
+      const gr = lg.createRadialGradient(s.x, s.y + s.r * .5, 0, s.x, s.y + s.r * .5, s.w * 1.5);
+      gr.addColorStop(0, 'rgba(255,170,70,.85)'); gr.addColorStop(.25, 'rgba(240,80,20,.6)'); gr.addColorStop(.6, 'rgba(150,20,10,.3)'); gr.addColorStop(1, 'rgba(60,5,5,0)');
+      lg.fillStyle = gr; lg.fillRect(s.x - s.w * 1.6, s.y - s.w, s.w * 3.2, s.w * 2.4);
+      for (let j = 0; j < 14; j++) {                                  // ember chips: glowing flecks in the charcoal
+        const ex = s.x + (rand() - .5) * s.w * 1.8, ey = yAt(ex) + (rand() - .6) * rAt(ex) * 1.6, er = .8 + rand() * 2.2 * (s.r / 12);
+        lg.fillStyle = rand() < .35 ? 'rgba(255,150,60,.75)' : 'rgba(225,50,20,.7)';
+        lg.beginPath(); lg.ellipse(ex, ey, er * 1.6, er * .8, (rand() - .5) * .6, 0, 7); lg.fill();
+      }
+    }
+    lg.restore();
+    fire.layout(W, H, spots);
+    budBox.innerHTML = bh;
+    buds = [...budBox.children];
+    fx.innerHTML = `<defs><filter id="treeGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#treeGlow)">${pl}</g>`;
+    pulses = [...fx.querySelectorAll('polyline')];
+    buds.forEach((b, k) => b.classList.toggle('on', k === on));
+  }
+  function setActive(i, glow) {
+    on = i;
+    buds.forEach((b, k) => b.classList.toggle('on', k === i));
+    const p = pulses[i];
+    if (!glow || !p || reduce || !p.getTotalLength) return;
+    const L = p.getTotalLength(), seg = Math.min(60, L * .3);
+    p.animate([{ strokeDasharray: `${seg} ${L + seg}`, strokeDashoffset: seg, opacity: 1 },
+               { strokeDasharray: `${seg} ${L + seg}`, strokeDashoffset: -L, opacity: 1 }],
+              { duration: 600 + L * .7, easing: 'cubic-bezier(.4,0,.2,1)' });
+  }
+  return { build, setActive };
+})();
+
+/* layout ------------------------------------------------------------ */
+let owlCenterY = 0, eyeY = 0, owlPx = 1, perchPx = 0;
+function layout() {
+  const w = innerWidth, h = innerHeight, header = 64;
+  let perch = Math.round(h * (w < 640 ? .43 : .48));
+  perch = Math.max(perch, header + 190);
+  docEl.style.setProperty('--perch', perch + 'px');
+  embers.resize(w, h);
+  if (!gl) { owlCenterY = eyeY = perch / 2; docEl.style.setProperty('--tail', '40px'); $('#talons').style.display = 'none'; tree.build(perch, w, h, 40, .5); return; }
+  const { renderer, camera, owlRoot } = gl;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  const visH = 2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const ppu = h / visH;
+  // fit ear tips to talons between the header and the perch; the spread frames are only as wide as the GIF
+  const s = Math.min((perch - header - 30) / (OWL.H * ppu), (w * .96) / (OWL.W * ppu));
+  owlRoot.scale.setScalar(s);
+  owlRoot.position.y = (.5 - perch / h) * visH - s * OWL.GRIP_Y;
+  const px = s * ppu;
+  owlPx = px; perchPx = perch;
+  owlCenterY = perch - OWL.H * px / 2;
+  eyeY = perch - (OWL.EYE_Y - OWL.GRIP_Y) * px;
+  docEl.style.setProperty('--tail', Math.max(14, Math.round(OWL.TAIL * px + 10)) + 'px');   // tabs sit below the tail
+  // the talons, in front of the branch: placed exactly over the owl's own (client's image px -> screen)
+  const opx = S0 / ART.unit * px, [tx0, ty0] = ART.talonsBox;
+  const tsx = w / 2 + (orig(tx0, 0)[0] - ART.axis) / ART.unit * px, tsy = perch + (orig(0, ty0)[1] - ART.grip) / ART.unit * px;
+  $('#talons').style.transform = `translate(${tsx.toFixed(2)}px,${tsy.toFixed(2)}px) scale(${opx.toFixed(5)})`;
+  tree.build(perch, w, h, OWL.FEET * px, opx);
+}
+addEventListener('resize', layout);
+layout();
+if (document.fonts) document.fonts.ready.then(layout);          // the tabs' widths settle once the font is in
+
+/* ------------------------------------------------------------------ */
+/*  navigation + transitions                                           */
+/*  One timeline drives both the owl and the content. Scrolling or      */
+/*  dragging scrubs its opening part (wings spreading, the current tab  */
+/*  lifting away) under the user's finger; letting go either plays the  */
+/*  rest through (flap, new tab laid out, wings fold) or rewinds it.    */
+/* ------------------------------------------------------------------ */
+const hint = $('#hint'), hintText = $('#hintText'), edgeLine = $('#edgeLine'), stage = $('#stage');
+let current = 0, tr = null, needQuiet = false, shakeT0 = -10;
+const SCRUB_END = .55;                       // timeline second at which the wings are fully spread
+const slow = () => (DEBUG && window.__slow) || 1;          // debugging: slow-motion factor
+
+function setTabUI(i) {
+  TABS.forEach((b, k) => b.setAttribute('aria-selected', String(k === i)));
+  tree.setActive(i, true);
+  const last = i === PANELS.length - 1;
+  hint.classList.toggle('back', last);
+  hintText.textContent = last ? (coarse ? 'Swipe down to go back' : 'Scroll up to go back')
+                              : `${coarse ? 'Swipe up' : 'Scroll'} for ${NAMES[i + 1]}`;
+}
+
+function go(to) {                            // keys, tabs and buttons play straight through
+  if (tr || intro) return;
+  if (to < 0 || to >= PANELS.length) { shakeT0 = performance.now(); return; }
+  if (to === current) return;
+  begin(current, to, to > current ? 1 : -1, false);
+}
+
+function begin(from, to, dir, scrub, owl = true) {
+  tr = { from, to, dir, mode: reduce ? 'fade' : 'flap', kids: [...PANELS[to].querySelector('.inner').children],
+         scrub, t: 0, target: 0, t0: 0, rewind: null, owl };
+  const el = PANELS[to];
+  el.scrollTop = 0;
+  el.classList.add('is-entering');
+  paintIn(0);
+  if (!scrub) commit();
+}
+function commit() {                          // play the rest from wherever the scrub left off
+  tr.scrub = false;
+  tr.t0 = performance.now() - tr.t * 1000 * slow();
+  current = tr.to;
+  setTabUI(current);
+  route(current, tr.from == null || historyNav);
+  if (tr.from != null) hint.classList.remove('fresh');
+}
+
+/* every tab has its own address (#services, #work ...), so a link can open it directly, and the
+   browser's back and forward buttons move between the tabs that were open */
+const SLUGS = PANELS.map((p, i) => NAMES[i].toLowerCase());
+const BASE_TITLE = document.title;
+const tabFromHash = () => SLUGS.indexOf(decodeURIComponent(location.hash.slice(1)).toLowerCase());
+let historyNav = false;                                       // the change came from back/forward: don't add a step
+function route(i, replace) {
+  const url = i === 0 ? location.pathname + location.search : '#' + SLUGS[i];
+  history[replace ? 'replaceState' : 'pushState']({ tab: i }, '', url);
+  document.title = i === 0 ? BASE_TITLE : `${NAMES[i]} — Shadows`;
+}
+addEventListener('popstate', () => {
+  const i = Math.max(0, tabFromHash());
+  if (i === current || intro) return;
+  if (tr) { route(current, true); return; }                    // mid-change: stay where the page is
+  historyNav = true; begin(current, i, i > current ? 1 : -1, false); historyNav = false;
+});
+function rewind() {                          // let go too early: fold the wings, bring the tab back
+  tr.scrub = false;
+  tr.rewind = { from: tr.t, t0: performance.now() };
+}
+function timelineT(now) {
+  if (tr.scrub) { tr.t += (tr.target - tr.t) * .25; return tr.t; }          // follows the finger, smoothed
+  if (tr.rewind) return Math.max(0, tr.rewind.from - (now - tr.rewind.t0) / 1000 * 1.3 / slow());
+  return (now - tr.t0) / 1000 / slow();
+}
+
+function paintIn(t) {
+  const { to, dir, mode: m, kids } = tr;
+  const el = PANELS[to];
+  const W = stage.clientWidth, H = stage.clientHeight;
+  if (m === 'flap') {
+    const r = ease.outCubic(clamp((t - .64) / .62));
+    const S = Math.min(140, r * 140), C = Math.max(0, r * 140 - 40);
+    el.style.clipPath = dir > 0
+      ? `polygon(0% 0%,50% 0%,100% 0%,100% ${S}%,50% ${C}%,0% ${S}%)`
+      : `polygon(0% 100%,50% 100%,100% 100%,100% ${100 - S}%,50% ${100 - C}%,0% ${100 - S}%)`;
+    const y = v => (dir > 0 ? v : 100 - v) / 100 * H;
+    edgeLine.setAttribute('points', `0,${y(S)} ${W / 2},${y(C)} ${W},${y(S)}`);
+    edgeLine.setAttribute('opacity', (r > 0 && r < 1 ? Math.sin(Math.PI * r) : 0).toFixed(3));
+    staggerKids(kids, t, .72, dir);
+  } else {
+    el.style.opacity = clamp((t - .15) / .3);
+  }
+}
+
+function staggerKids(kids, t, t0, dir) {
+  kids.forEach((k, i) => {
+    const c = clamp((t - t0 - i * .07) / .45), e = ease.outCubic(c);
+    k.style.opacity = c;
+    k.style.transform = `translateY(${(1 - e) * -16 * dir}px)`;
+  });
+}
+
+function paintOut(t) {
+  const { from, dir, mode: m } = tr;
+  if (from == null) return;
+  const el = PANELS[from];
+  const o = clamp(t / (m === 'fade' ? .2 : .32));
+  el.style.opacity = 1 - o;
+  if (m !== 'fade') {
+    el.style.transform = `translateY(${-dir * 22 * ease.outCubic(o)}px)`;   // no blur: it cost a quarter of the frame rate
+  }
+}
+
+function clearStyles(el) {
+  for (const p of ['opacity', 'transform', 'filter', 'clipPath']) el.style[p] = '';
+}
+
+// advances the content; returns the timeline second for the owl (null when nothing is moving)
+function stepTransition(now) {
+  if (!tr) return null;
+  const t = timelineT(now);
+  paintOut(t);
+  paintIn(t);
+  const inEl = PANELS[tr.to], outEl = tr.from != null ? PANELS[tr.from] : null;
+  if (tr.rewind && t <= 0) {                                   // back where we started
+    clearStyles(inEl); tr.kids.forEach(clearStyles); inEl.classList.remove('is-entering');
+    if (outEl) clearStyles(outEl);
+    edgeLine.setAttribute('opacity', 0);
+    tr = null; needQuiet = true;
+    return null;
+  }
+  if (!tr.scrub && !tr.rewind && t >= DUR[tr.mode]) {          // done
+    clearStyles(inEl); tr.kids.forEach(clearStyles);
+    inEl.classList.remove('is-entering'); inEl.classList.add('is-active');
+    if (outEl) { outEl.classList.remove('is-active'); clearStyles(outEl); }
+    edgeLine.setAttribute('opacity', 0);
+    tr = null; needQuiet = true;
+    return null;
+  }
+  return tr.mode === 'flap' && tr.owl ? t : null;
+}
+
+/* input --------------------------------------------------------------- */
+// a scroll or swipe may start a scrub only when the current tab has (almost) nothing left to scroll
+// that way; the few pixels of bottom padding under short tabs don't count
+function canLeave(d) {
+  const p = PANELS[current];
+  return d > 0 ? p.scrollTop + p.clientHeight >= p.scrollHeight - 24 : p.scrollTop <= 2;
+}
+function startScrub(d, now) {
+  const to = current + d;
+  if (to < 0 || to >= PANELS.length) { if (now - shakeT0 > 900) shakeT0 = now; return false; }
+  if (reduce) { go(to); return false; }
+  begin(current, to, d, true);
+  return true;
+}
+
+let wheelP = 0, wheelTimer = 0, lastWheel = 0;
+addEventListener('wheel', e => {
+  const now = performance.now(), gap = now - lastWheel; lastWheel = now;
+  if (intro || (tr && !tr.scrub)) return;                      // the page is opening, or a transition is playing
+  if (needQuiet) { if (gap < 220) return; needQuiet = false; } // ignore the tail of trackpad inertia
+  const dy = e.deltaY * (e.deltaMode === 1 ? 40 : 1);
+  if (!tr) {
+    const d = Math.sign(dy);
+    if (!d || !canLeave(d) || !startScrub(d, now)) return;
+    wheelP = 0;
+  }
+  wheelP = clamp(wheelP + dy * tr.dir / 420);                 // scrolling back closes the wings again
+  tr.target = wheelP * SCRUB_END;
+  clearTimeout(wheelTimer);
+  if (wheelP >= 1) { commit(); return; }
+  wheelTimer = setTimeout(() => { if (tr && tr.scrub) (wheelP > .12 ? commit() : rewind()); }, 140);
+}, { passive: true });
+
+let touch = null;
+addEventListener('touchstart', e => {
+  touch = (intro || (tr && !tr.scrub)) ? null : { y0: e.touches[0].clientY, y: e.touches[0].clientY, t: performance.now(), v: 0 };
+}, { passive: true });
+addEventListener('touchmove', e => {
+  if (!touch) return;
+  const now = performance.now(), y = e.touches[0].clientY, dy = touch.y0 - y;   // + = finger moving up
+  touch.v = (touch.y - y) / Math.max(1, now - touch.t); touch.y = y; touch.t = now;
+  if (!tr) {
+    if (Math.abs(dy) < 10) return;
+    const d = Math.sign(dy);
+    if (!canLeave(d) || !startScrub(d, now)) { touch = null; return; }
+  }
+  if (tr.scrub) tr.target = clamp(dy * tr.dir / (innerHeight * .32)) * SCRUB_END;
+}, { passive: true });
+const endTouch = () => {
+  if (touch && tr && tr.scrub) {
+    const p = tr.target / SCRUB_END, flick = touch.v * tr.dir > .45;          // px per ms toward the next tab
+    (p > .3 || (flick && p > .04)) ? commit() : rewind();
+  }
+  touch = null;
+};
+addEventListener('touchend', endTouch, { passive: true });
+addEventListener('touchcancel', endTouch, { passive: true });
+
+addEventListener('keydown', e => {
+  if (e.altKey || e.ctrlKey || e.metaKey || intro) return;
+  const onControl = e.target.closest && e.target.closest('button, a');
+  if (e.key === 'ArrowDown' || e.key === 'PageDown' || (e.key === ' ' && !onControl)) { e.preventDefault(); go(current + 1); }
+  else if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); go(current - 1); }
+  else if (e.key === 'Home') go(0);
+  else if (e.key === 'End') go(PANELS.length - 1);
+});
+
+TABS.forEach((b, i) => b.addEventListener('click', () => go(i)));
+document.querySelectorAll('[data-go]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); go(+a.dataset.go); }));
+
+// where the owl looks: the mouse, or a finger on the screen
+let mx = .5, my = .3, lastPoint = -1e9;
+const point = e => { mx = e.clientX / innerWidth; my = e.clientY / innerHeight; lastPoint = performance.now(); };
+addEventListener('pointermove', point, { passive: true });
+addEventListener('pointerdown', point, { passive: true });
+// on a phone, with no finger on the screen, it follows how the phone is tilted (iOS asks first, on a tap)
+let tilt = null;
+const onTilt = e => { if (e.gamma != null) tilt = { x: clamp(.5 + e.gamma / 50, .1, .9), y: clamp(.42 + (e.beta - 50) / 60, .15, .85) }; };
+if (coarse && window.DeviceOrientationEvent) {
+  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    addEventListener('touchend', function ask() {
+      removeEventListener('touchend', ask);
+      DeviceOrientationEvent.requestPermission().then(r => { if (r === 'granted') addEventListener('deviceorientation', onTilt); }).catch(() => {});
+    });
+  } else addEventListener('deviceorientation', onTilt);
+}
+// left alone, it looks around calmly now and then, sometimes tilting its head as owls do; and it blinks
+const idle = { x: .5, y: .4, roll: 0, next: 0 };
+let roll = 0, blinkAt = performance.now() + 2500, blinkTwice = false;
+const lidAt = u => u < 0 ? 0 : u < .07 ? u / .07 : u < .18 ? 1 - (u - .07) / .11 : 0;
+
+/* render loop ----------------------------------------------------------- */
+let hx = 0, hy = 0, lastNow = 0, sPrev = 0, bPrev = 0, bend = 0;
+const eo = [[0, 0], [0, 0]];                                        // each pupil's offset
+const eyeX = ART.eyes.map(e => (orig(ART.headBox[0] + e[0], 0)[0] - ART.axis) / ART.unit);   // eyes across the face, world units
+const glowEl = $('.glow');
+/* on a device that can't keep up, the page turns its own effects down, a step at a time (never back up):
+   fewer embers and flames, no smoke, and the owl drawn at one pixel per screen pixel. It only measures
+   while nothing is changing, so a tab change never counts against the device. */
+const perf = { level: 0, n: 0, sum: 0, last: 0 };
+function lighten(level) {
+  perf.level = level;
+  embers.setDensity(level === 1 ? .55 : .3); fire.setDensity(level === 1 ? .6 : .35);
+  if (gl && gl.renderer.getPixelRatio() !== 1) { gl.renderer.setPixelRatio(1); layout(); }
+}
+if (/[?&]lite(&|$)/.test(location.search)) lighten(2);           // ?lite: the lightest level, to see it
+function frame(now) {
+  requestAnimationFrame(frame);
+  const raw = (now - (perf.last || now)) / 1000; perf.last = now;
+  if (!tr && !intro && document.visibilityState === 'visible' && raw > 0 && raw < .25 && perf.level < 2) {
+    perf.sum += raw;
+    if (++perf.n >= 150) { if (perf.n / perf.sum < 42) lighten(perf.level + 1); perf.n = perf.sum = 0; }
+  } else { perf.n = perf.sum = 0; }
+  const t = DEBUG && window.__t != null ? (stepTransition(now), window.__t) : stepTransition(now);   // __t: debugging freeze
+  embers.step(now);
+  fire.step(now);
+  if (!gl) return;
+  const dt = Math.max(1 / 240, Math.min(.05, (now - (lastNow || now)) / 1000)); lastNow = now;
+  const s = t != null ? keyed(SPREAD, t) : 0, b = t != null ? keyed(BEAT, t) : 0;
+  // the outer feathers trail the motion: against a stroke up they lag down, and the other way
+  const vs = (s - sPrev) / dt, vb = (b - bPrev) / dt; sPrev = s; bPrev = b;
+  bend += (clamp(-(vb * .03 + vs * .07), -.18, .18) - bend) * .25;
+  gl.setWings(s, b, bend);
+  // every beat of the wings blows the embers away and bends the flames
+  const moved = Math.abs(vb) + Math.abs(vs) * 1.4;
+  if (moved > .08) {
+    const p = moved * dt * 2.4;
+    embers.gust(innerWidth / 2, owlCenterY, p); fire.gust(innerWidth / 2, perchPx, p);
+  }
+  // the red glow behind the owl swells as the wings open
+  const open = s;
+  glowEl.style.opacity = (.8 + .2 * open).toFixed(3);
+  glowEl.style.transform = `scale(${(1 + .16 * open).toFixed(3)})`;
+
+  // breathing: the body swells a little, slowly, around where the talons hold the branch
+  const br = Math.sin(now / 1000 * Math.PI * 2 / 4.4) * (1 - s), sy = 1 + .009 * br;
+  gl.owl.scale.set(1 + .006 * br, sy, 1); gl.owl.position.y = OWL.GRIP_Y * (1 - sy);
+  // a blink every few seconds, now and then twice
+  if (now > blinkAt + 180) {
+    if (blinkTwice) { blinkAt = now + 120; blinkTwice = false; }
+    else { blinkAt = now + 2600 + Math.random() * 4200; blinkTwice = Math.random() < .22; }
+  }
+  gl.eyeU.lid.value = reduce ? 0 : lidAt((now - blinkAt) / 1000);
+
+  // gaze: the cursor (or finger) is a point in front of the owl. Only the head turns (the body stays
+  // still), most of the way toward it, and each eye turns the rest on its own, so both pupils point
+  // exactly at it (and close in when it comes near the face). With nothing to follow it looks around
+  // by itself, or where a phone is tilted. A "no" past the first and last tab.
+  const aim = 1, D = Math.max(innerWidth, innerHeight) * .55, alone = now - lastPoint > 3500;
+  if (alone && now > idle.next) {
+    const curious = Math.random() < .35;
+    Object.assign(idle, { x: .22 + Math.random() * .56, y: .25 + Math.random() * .45, next: now + 2200 + Math.random() * 3400,
+                          roll: curious ? (Math.random() < .5 ? -1 : 1) * (.1 + Math.random() * .09) : 0 });
+  }
+  const tx = alone ? (tilt ? tilt.x : idle.x) : mx, ty = alone ? (tilt ? tilt.y : idle.y) : my, calm = alone ? .05 : .14;
+  const px = tx * innerWidth, py = ty * innerHeight, cx = innerWidth / 2;
+  hx += (clamp(Math.atan2(px - cx, D) * .72 * aim, -.4, .4) - hx) * calm;
+  hy += (clamp(Math.atan2(py - eyeY, D) * .6 * aim, -.26, .26) - hy) * calm;
+  roll += ((alone && !tilt && !reduce ? idle.roll : 0) - roll) * .045;
+  const st = (now - shakeT0) / 1000;
+  const shake = st < .8 ? Math.sin(st * 24) * Math.exp(-st * 4.5) : 0;
+  gl.headG.rotation.set(hy, hx + shake * .2, -hx * .07 + roll);
+  for (let i = 0; i < 2; i++) {                                    // what the head has not turned, each eye does
+    const exs = cx + eyeX[i] * owlPx;
+    let ox = (Math.atan2(px - exs, D) * aim - hx) * 17, oy = (Math.atan2(py - eyeY, D) * aim - hy) * 17;
+    const l = Math.hypot(ox, oy); if (l > 6) { ox *= 6 / l; oy *= 6 / l; }   // pupil travel, in the client's image px
+    eo[i][0] += (ox - eo[i][0]) * .3; eo[i][1] += (oy - eo[i][1]) * .3;
+    gl.eyeU.offIris.value[i].set(eo[i][0], eo[i][1]);
+    gl.eyeU.offCore.value[i].set(eo[i][0] * .8, eo[i][1] * .8);
+  }
+
+  gl.renderer.render(gl.scene, gl.camera);
+}
+requestAnimationFrame(frame);
+
+if (DEBUG) window.__shadows = { go, get gl() { return gl; }, get state() { return tr ? { to: tr.to, scrub: tr.scrub, rewind: !!tr.rewind, t: +tr.t.toFixed(3) } : null; } };
+
+/* opening: the branch grows in from the left and the owl, at rest, appears on it; then the offshoots
+   and their tabs appear and the first tab is laid out. The wings start moving once their frames are in. */
+let intro = true;                                                 // input waits until the page has opened
+let started = false;
+function startIntro() {
+  if (started) return;
+  started = true;
+  docEl.classList.add('grown');
+  if (gl && !reduce) $('#owl').animate([{ opacity: 0 }, { opacity: 1 }], { duration: 900, delay: 300, easing: 'ease-out', fill: 'backwards' });
+  setTimeout(() => { docEl.classList.remove('intro', 'grown'); intro = false; begin(null, startTab, 1, false, false); }, reduce ? 0 : 900);
+}
+const startTab = Math.max(0, tabFromHash());                     // a link to a tab opens on that tab
+setTabUI(startTab);
+const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
+const wait = ms => new Promise(r => setTimeout(r, ms));
+Promise.race([Promise.all([gl ? gl.restReady : null, fontsReady]), wait(4000)]).then(startIntro);
+})();
+</script>
+</body>
+</html>

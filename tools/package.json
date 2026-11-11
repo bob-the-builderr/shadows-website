@@ -1,0 +1,11 @@
+{
+  "name": "shadows-owl-tools",
+  "private": true,
+  "description": "Builds the owl images for the Shadows site from the client's drawings in ../source",
+  "scripts": {
+    "build": "node build-owl.js"
+  },
+  "devDependencies": {
+    "sharp": "0.33.5"
+  }
+}
