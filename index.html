@@ -38,7 +38,11 @@
   --garnet:#910814;    /* Deep Crimson — shadows and dramatic gradients */
   --bone:#F7F5F5;      /* Soft White — main text */
   --ash:#AFAAAF;       /* Ash Grey — secondary text */
-  --rule:rgba(225,24,39,.3);
+  --rule:rgba(247,245,245,.12);   /* dividers: quiet, so red is left for what asks to be clicked */
+  --line:rgba(247,245,245,.34);   /* outlines (the secondary button) */
+  /* spacing: heading to its paragraph, and to whatever follows (buttons, lists) */
+  --gap-s:18px;
+  --gap-l:32px;
   --perch:50vh;
   --header:64px;
   --display:"Archivo",system-ui,sans-serif;   /* set wide and heavy for headlines */
@@ -52,12 +56,12 @@ body{font-family:var(--text);font-size:16px;line-height:1.5;-webkit-font-smoothi
    or the content): the deck's own film-dust texture, a light grain, and a measured red glow */
 /* every full-screen layer is its own composited layer, painted once: nothing that moves ever makes
    the browser repaint them (that alone took the page from 5 to 60 frames a second on integrated graphics) */
-.texture{position:fixed;inset:0;z-index:0;pointer-events:none;background:url(assets/texture.webp) center/cover no-repeat;opacity:.42;will-change:transform}
+.texture{position:fixed;inset:0;z-index:0;pointer-events:none;background:url(assets/texture.webp) center/cover no-repeat;opacity:.3;will-change:transform}
 .glow{position:fixed;inset:0;z-index:0;pointer-events:none;transform-origin:50% calc(var(--perch) * .56);will-change:transform,opacity;
   background:
     radial-gradient(38vmin 34vmin at 50% calc(var(--perch) * .56), rgba(225,24,39,.18), transparent 72%),
     radial-gradient(80vw 22vh at 50% var(--perch), rgba(145,8,20,.3), transparent 70%);}
-.grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.05;background:url(assets/grain.png);will-change:transform}
+.grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.035;background:url(assets/grain.png);will-change:transform}
 
 #owl{position:fixed;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;display:block}
 
@@ -111,24 +115,26 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header);z-index:6;displa
 .inner{max-width:900px;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center}
 /* headlines: bold, short, high impact */
 h1,h2{font-family:var(--display);font-weight:800;font-stretch:125%;font-size:clamp(24px,3.3vw,42px);line-height:1.08;letter-spacing:-.015em;color:var(--bone);max-width:20ch;text-wrap:balance}
-.lede{margin-top:16px;font-size:clamp(15px,1.3vw,17px);color:var(--ash);max-width:48ch;text-wrap:pretty}
-.actions{margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.lede{margin-top:var(--gap-s);font-size:clamp(15px,1.3vw,17px);line-height:1.6;color:var(--ash);max-width:50ch;text-wrap:pretty}
+.actions{margin-top:var(--gap-l);display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.actions .btn{min-width:212px}                 /* side by side, the two buttons are the same width */
 .btn{--cut:10px;position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 24px;font:700 15px/1 var(--text);letter-spacing:.01em;color:var(--bone);text-decoration:none;background:var(--ruby);
   clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut));transition:background .2s}
 .btn:hover{background:var(--garnet)}
-.btn.ghost{background:rgba(225,24,39,.65)}
+/* the secondary button: a quiet white outline, so the red one is the only call to action */
+.btn.ghost{background:var(--line)}
 .btn.ghost::before{content:"";position:absolute;inset:1px;z-index:-1;background:var(--void);
   clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}
-.btn.ghost:hover{background:var(--ruby)}
+.btn.ghost:hover{background:var(--bone)}
 .btn:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--bone)}
 .btn.ghost:focus-visible::before{inset:3px}
 
-.services{list-style:none;margin-top:30px;display:grid;grid-template-columns:repeat(4,1fr);width:min(100%,920px);text-align:left}
-.services li{padding:2px 18px 2px 16px;border-left:1px solid var(--rule)}
+.services{list-style:none;margin-top:var(--gap-l);display:grid;grid-template-columns:repeat(4,1fr);width:min(100%,920px);text-align:left}
+.services li{padding:2px 20px 2px 18px;border-left:1px solid var(--rule)}
 .services h3{font:700 16px/1.3 var(--text);color:var(--bone)}
-.services p{margin-top:8px;font-size:14px;line-height:1.5;color:var(--ash)}
+.services p{margin-top:8px;font-size:14px;line-height:1.55;color:var(--ash)}
 
-.work{list-style:none;margin-top:26px;width:min(100%,760px)}
+.work{list-style:none;margin-top:var(--gap-l);width:min(100%,760px)}
 .work li{display:grid;grid-template-columns:1.1fr 1.3fr auto;align-items:baseline;gap:16px;padding:15px 4px;border-top:1px solid var(--rule);text-align:left}
 .work li:last-child{border-bottom:1px solid var(--rule)}
 .w-name{font:800 15px/1.3 var(--display);font-stretch:115%;color:var(--bone)}
@@ -147,7 +153,7 @@ h1,h2{font-family:var(--display);font-weight:800;font-stretch:125%;font-size:cla
 
 body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-index:2;pointer-events:none;background:linear-gradient(rgba(8,8,10,0),var(--void) 72%);will-change:transform}
 .hint{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;color:var(--ash);pointer-events:none;white-space:nowrap;transition:opacity .4s;will-change:opacity}
-.chev{width:9px;height:9px;border-left:1.5px solid var(--ruby);border-top:1.5px solid var(--ruby);transform:rotate(45deg);will-change:transform}
+.chev{width:9px;height:9px;border-left:1.5px solid var(--ash);border-top:1.5px solid var(--ash);transform:rotate(45deg);will-change:transform}
 .hint.back .chev{transform:rotate(225deg)}
 .hint.fresh .chev{animation:nudge 1.8s ease-in-out infinite}
 @keyframes nudge{50%{transform:translateY(-5px) rotate(45deg)}}
@@ -160,6 +166,10 @@ body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-inde
   .tabs{gap:14px}
   .tabs button{font-size:13px}
   .wordmark img{height:28px}
+  :root{--gap-l:26px}
+  /* stacked, the buttons are one column of equal width */
+  .actions{flex-direction:column;align-items:stretch;width:min(100%,300px)}
+  .actions .btn{min-width:0}
   .work li{grid-template-columns:1fr auto;gap:4px 12px}
   .w-what{grid-column:1/-1;grid-row:2;font-size:14px}
 }
@@ -638,6 +648,9 @@ const follow = (dt, tau) => 1 - Math.exp(-dt / tau);
 const embers = (() => {
   const c = $('#embers'), g = c.getContext('2d');
   let W = 1, H = 1, R = 1, prev = 0, push = null, density = 1;
+  // the content's quiet zone: a column under the tabs where the embers all but go out, so the text
+  // always reads on calm black (hw: its half width, y0: its top, set by the layout)
+  const calm = { hw: 500, y0: 1e9 };
   const parts = [];
   const sprite = (rgb, r) => {
     const s = document.createElement('canvas'); s.width = s.height = r * 2;
@@ -657,7 +670,7 @@ const embers = (() => {
     p.y = anywhere ? rand(0, H) : -rand(8, 90);
     p.vx = rand(-12, 12);
     p.vy = p.kind === 2 ? rand(10, 28) : rand(22, 80) * (p.kind === 1 ? .45 : 1);
-    p.s = p.kind === 0 ? (Math.random() < .07 ? rand(3, 4.6) : rand(.8, 2.6)) : p.kind === 1 ? rand(8, 24) : rand(1.2, 2.8);
+    p.s = p.kind === 0 ? (Math.random() < .03 ? rand(3, 4.2) : rand(.8, 2.4)) : p.kind === 1 ? rand(8, 24) : rand(1.2, 2.8);
     p.a = p.kind === 0 ? rand(.55, 1) : p.kind === 1 ? rand(.05, .14) : rand(.12, .3);
     p.ph = rand(0, 6.3); p.fl = rand(4, 13); p.hot = Math.random() < .3;
     p.life = anywhere ? rand(0, 4) : 0; p.max = rand(8, 18);
@@ -667,7 +680,8 @@ const embers = (() => {
   function resize(w, h) {
     R = Math.min(devicePixelRatio || 1, 1.5); W = w; H = h;
     c.width = Math.round(w * R); c.height = Math.round(h * R);
-    const n = Math.round(clamp(w * h / 4200, 90, 420) * (reduce ? .35 : 1) * density);
+    // about half as many as the screen once held: a few embers read as atmosphere, hundreds as noise
+    const n = Math.round(clamp(w * h / 8400, 60, 210) * (reduce ? .35 : 1) * density);
     while (parts.length < n) parts.push(make({}, true));
     parts.length = n;
   }
@@ -681,8 +695,8 @@ const embers = (() => {
     // a fire glow low on the horizon, breathing
     const fl = .78 + .12 * Math.sin(t * 1.3) + .07 * Math.sin(t * 3.9 + 1);
     const gr = g.createLinearGradient(0, H, 0, H * .35);
-    gr.addColorStop(0, `rgba(170,10,22,${(.62 * fl).toFixed(3)})`);
-    gr.addColorStop(.35, `rgba(110,5,14,${(.24 * fl).toFixed(3)})`);
+    gr.addColorStop(0, `rgba(170,10,22,${(.4 * fl).toFixed(3)})`);
+    gr.addColorStop(.35, `rgba(110,5,14,${(.14 * fl).toFixed(3)})`);
     gr.addColorStop(1, 'rgba(8,8,10,0)');
     g.fillStyle = gr; g.fillRect(0, H * .35, W, H * .65);
     const sky = g.createLinearGradient(0, 0, 0, H * .3);                  // and a burnt sky above
@@ -702,7 +716,10 @@ const embers = (() => {
       p.y += (p.vy + p.iy) * dt * k;
       p.rot += p.spin * dt;
       if (p.y < -140 || p.y > H + 60 || p.x < -80 || p.x > W + 80 || p.life > p.max) { make(p, false); continue; }
-      const fade = Math.min(1, p.life / 1.2) * Math.min(1, (p.max - p.life) / 2);
+      // in the content's quiet zone they dim to a fifth, fading in and out over 90px at its edges
+      const zx = Math.max(0, Math.abs(p.x - W / 2) - calm.hw), zy = Math.max(0, calm.y0 - p.y);
+      const quiet = 1 - .8 * Math.max(0, 1 - Math.hypot(zx, zy) / 90);
+      const fade = Math.min(1, p.life / 1.2) * Math.min(1, (p.max - p.life) / 2) * quiet;
       if (p.kind === 2) {                                       // ash: a small grey flake turning over
         const cs = Math.cos(p.rot) * R, sn = Math.sin(p.rot) * R;
         g.setTransform(cs, sn, -sn * .45, cs * .45, p.x * R, p.y * R);
@@ -731,7 +748,8 @@ const embers = (() => {
     g.globalCompositeOperation = 'source-over';
   }
   function setDensity(k) { density = k; resize(W, H); }
-  return { resize, step, gust, setDensity };
+  function setCalm(y0, hw) { calm.y0 = y0; calm.hw = hw; }
+  return { resize, step, gust, setDensity, setCalm };
 })();
 
 /* ------------------------------------------------------------------ */
@@ -774,7 +792,7 @@ const fire = (() => {
   }
   function gust(x, y, p) { if (!reduce) push = { x, y: y - top, p }; }
   function emit(s, kind) {
-    const sc = Math.max(.75, s.r / 11);                         // flames as big as the wood that burns
+    const sc = Math.max(.65, s.r / 11) * .82;                   // flames a little smaller than the wood that burns
     if (kind === 0) {
       // across the whole burning stretch, hotter and taller toward its middle, every tongue different
       const o = rand(-.5, .5), mid = 1 - Math.abs(o) * 1.3, big = Math.random() < .18;
@@ -801,7 +819,7 @@ const fire = (() => {
     for (const s of spots) {
       const fl = .75 + .15 * Math.sin(t * 9 + s.ph) + .1 * Math.sin(t * 23 + s.ph * 2);
       const r = s.w * 1.1 * (.9 + .1 * fl);
-      g.globalAlpha = .85 * fl; g.drawImage(BED, s.x - r, s.y + s.r * .2 - r * .55, r * 2, r * 1.1);
+      g.globalAlpha = .7 * fl; g.drawImage(BED, s.x - r, s.y + s.r * .2 - r * .55, r * 2, r * 1.1);
     }
     // smoke first (it darkens what is behind it), then the flames and sparks on top, added as light
     for (let pass = 0; pass < 2; pass++) {
@@ -999,7 +1017,7 @@ const tree = (() => {
     // where it burns: a few spots along the limb, never near the talons; the wood glows around each,
     // brightest on top where the flames sit, with hot chips of ember in it
     const spots = [];
-    for (const u of W < 640 ? [-.36, .3] : [-.41, -.22, .21, .39]) {
+    for (const u of W < 640 ? [-.36, .3] : [-.36, .33]) {           // two fires, an accent, not a blaze
       const x = cx + u * W; if (Math.abs(x - cx) < Z + 40 || x < 30 || x > W - 30) continue;
       spots.push({ x, y: yAt(x) - rAt(x) * .78, w: rAt(x) * 2.3, r: rAt(x), power: .7 + rand() * .3 });
     }
@@ -1044,7 +1062,7 @@ function layout() {
   perch = Math.max(perch, header + 190);
   docEl.style.setProperty('--perch', perch + 'px');
   embers.resize(w, h);
-  if (!gl) { owlCenterY = eyeY = perch / 2; docEl.style.setProperty('--tail', '40px'); $('#talons').style.display = 'none'; tree.build(perch, w, h, 40, .5); return; }
+  if (!gl) { owlCenterY = eyeY = perch / 2; docEl.style.setProperty('--tail', '40px'); embers.setCalm(perch + 76, Math.min(w / 2, 480)); $('#talons').style.display = 'none'; tree.build(perch, w, h, 40, .5); return; }
   const { renderer, camera, owlRoot } = gl;
   const visH = 2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   const ppu = h / visH;
@@ -1062,7 +1080,9 @@ function layout() {
   owlPx = px; perchPx = perch;
   owlCenterY = perch - OWL.H * px / 2;
   eyeY = perch - (OWL.EYE_Y - OWL.GRIP_Y) * px;
-  docEl.style.setProperty('--tail', Math.max(14, Math.round(OWL.TAIL * px + 10)) + 'px');   // tabs sit below the tail
+  const tail = Math.max(14, Math.round(OWL.TAIL * px + 10));
+  docEl.style.setProperty('--tail', tail + 'px');                // tabs sit below the tail
+  embers.setCalm(perch + tail + 36, Math.min(w / 2, 480));       // the content's column, from just under the tabs
   // the talons, in front of the branch: placed exactly over the owl's own (client's image px -> screen)
   const opx = S0 / ART.unit * px, [tx0, ty0] = ART.talonsBox;
   const tsx = w / 2 + (orig(tx0, 0)[0] - ART.axis) / ART.unit * px, tsy = perch + (orig(0, ty0)[1] - ART.grip) / ART.unit * px;
