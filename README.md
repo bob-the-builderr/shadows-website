@@ -34,7 +34,12 @@ the chest's chevrons carry on, lit), the shadow the folded wings cast on it, whi
 the two folded wings that lift off it (`owl-fold-l`, `owl-fold-r`),
 the head layer that turns toward the mouse (`owl-head`), the talons that grip the branch (`owl-talons`),
 the two open wings they hand over to (`owl-wing-l`, `owl-wing-r`), and the share image (`og.jpg`).
-The `-m` files are the lighter phone versions.
+The `-m` files are half-size versions, used only on phones with a low-density screen (on any sharper
+screen the owl gets more screen pixels than they have).
+
+The page draws every image with its smaller copies (mipmaps), premultiplied and slightly sharpened
+(`LOD` in `index.html`), so the crystal edges stay crisp and don't shimmer when the owl is drawn
+smaller than its images, which it is on nearly every screen.
 
 How the wings open, beat and fold, and how the body goes with them, is tuned by `SPREAD`, `BEAT`,
 `LIFT`, `LEAN` and `RIG` in `index.html`.

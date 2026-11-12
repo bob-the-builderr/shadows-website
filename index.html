@@ -87,6 +87,8 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header);z-index:6;displa
 .buds i.on{background:radial-gradient(circle,#fff1dc 0 18%,#ff9a5a 36%,#e11827 70%);box-shadow:0 0 10px 3px rgba(255,80,40,.75),0 0 24px 6px rgba(225,24,39,.35);transform:scale(1.25)}
 .tree-fx{position:fixed;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;overflow:visible}
 .tree-fx polyline{fill:none;stroke:#ffb08a;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.tree-fx .halo{stroke:#ff5a2e;stroke-width:10;stroke-opacity:.14}
+.tree-fx .halo2{stroke:#ff8a5a;stroke-width:5.5;stroke-opacity:.32}
 
 .tabs{position:fixed;left:0;right:0;top:calc(var(--perch) + var(--tail, 14px));z-index:2;display:flex;justify-content:center;gap:clamp(16px,3.4vw,40px);padding:0 12px;transition:opacity .6s}
 .tabs button{all:unset;cursor:pointer;position:relative;padding:10px 2px 8px;font:500 14px/1 var(--text);letter-spacing:.01em;color:var(--ash);transition:color .3s}
@@ -136,8 +138,12 @@ h1,h2{font-family:var(--display);font-weight:800;font-stretch:125%;font-size:cla
 .fine{margin-top:34px;font-size:13px;color:#615c62}
 
 /* glowing edge of the reveal as the wings sweep down */
-.edge{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;filter:drop-shadow(0 0 6px rgba(225,24,39,.9))}
-.edge polyline,.edge line{fill:none;stroke:var(--ruby);stroke-width:1.5}
+/* the reveal's edge glows by two faint, wide strokes under it, not a drop-shadow filter (redrawn every
+   frame of the reveal, it cost the tab change many frames) */
+.edge{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.edge polyline,.edge line{fill:none;stroke:var(--ruby);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+.edge .halo{stroke-width:12;stroke-opacity:.16}
+.edge .halo2{stroke-width:5;stroke-opacity:.42}
 
 body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-index:2;pointer-events:none;background:linear-gradient(rgba(8,8,10,0),var(--void) 72%);will-change:transform}
 .hint{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;color:var(--ash);pointer-events:none;white-space:nowrap;transition:opacity .4s;will-change:opacity}
@@ -243,7 +249,7 @@ body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-inde
     </div>
   </section>
 
-  <svg class="edge" id="edge" aria-hidden="true"><polyline id="edgeLine" points="" opacity="0"/></svg>
+  <svg class="edge" id="edge" aria-hidden="true"><g id="edgeLine" opacity="0"><polyline class="halo" points=""/><polyline class="halo2" points=""/><polyline points=""/></g></svg>
 </main>
 
 <div class="hint fresh" id="hint" aria-hidden="true"><span class="chev"></span><span id="hintText"></span></div>
@@ -282,7 +288,9 @@ const ease = {
 /*  body rises and tips with the strokes while the talons hold on.     */
 /*  Units: px of a 1366-wide frame around the owl, 100 to a world unit. */
 /* ------------------------------------------------------------------ */
-const small = innerWidth < 760 || coarse;                     // phones get lighter images
+// the half-size images only where they are still sharp: a phone with a low-density screen. On any
+// sharper phone screen the owl gets more screen pixels than they have, so it gets the full ones.
+const small = (innerWidth < 760 || coarse) && (devicePixelRatio || 1) < 1.5;
 const S0 = 768 / 1337, OX0 = 516 * S0, OY0 = 170 * S0;          // the client's perched image px -> frame px
 const orig = (x, y) => [x * S0 + OX0, y * S0 + OY0];
 const ART = {
@@ -314,6 +322,9 @@ const ART = {
   spread: { axis: 836.7, ear: 170, k: 1.1, dy: 46 },
 };
 const fromSpread = (x, y) => [(x - ART.spread.axis) * ART.spread.k + 673, (y - ART.spread.ear) * ART.spread.k + 107 + ART.spread.dy];
+// every image lookup reads a slightly sharper copy than the size alone would pick (a mip bias): the
+// smaller copies stop the edges shimmering, and this keeps them as crisp as the drawing
+const LOD = '-.65';
 const CY = (ART.top + ART.grip) / 2;
 const W = (x, y) => [(x - ART.axis) / ART.unit, -(y - CY) / ART.unit];   // video px -> world
 const OWL = {
@@ -332,7 +343,7 @@ const HEAD_FS = `
   uniform float lid;                                            // the blink: 0 open .. 1 shut
   varying vec2 vUv;
   const vec4 SOCKET = vec4(.03, 0., .004, 1.);
-  vec4 tex(vec2 p) { return texture2D(map, vec2(p.x / texSize.x, 1. - p.y / texSize.y)); }
+  vec4 tex(vec2 p) { return texture2D(map, vec2(p.x / texSize.x, 1. - p.y / texSize.y), ${LOD}); }
   float ell(vec2 p, vec2 c, vec2 r) { float e = length((p - c) / r); return 1. - smoothstep(1. - 1.2 / r.x, 1. + .6 / r.x, e); }
   float below(vec2 p, vec3 L) { return clamp(dot(L, vec3(p, 1.)) + .5, 0., 1.); }
   void main() {
@@ -357,7 +368,7 @@ const HEAD_FS = `
         col.rgb += vec3(.55, .06, .07) * exp(-pow((p.y - edge) / 1.1, 2.)) * area * .7;
       }
     }
-    col.a *= fade;
+    col *= fade;                                                // premultiplied colour
     if (col.a < .02) discard;
     gl_FragColor = col;
   }`;
@@ -387,7 +398,7 @@ function buildOwl() {
     legs: { value: new THREE.Vector3(W(0, orig(0, ART.legs[0])[1])[1] - bcy, W(0, orig(0, ART.legs[1])[1])[1] - bcy, -bcx) },
   };
   const body = new THREE.Mesh(new THREE.PlaneGeometry(bw0 * S0 / ART.unit, bh0 * S0 / ART.unit, 1, 80), new THREE.ShaderMaterial({
-    uniforms: bodyU, transparent: true, depthWrite: false,
+    uniforms: bodyU, transparent: true, depthWrite: false, premultipliedAlpha: true,
     vertexShader: `uniform float lift; uniform float puff; uniform vec3 legs; varying vec2 vUv;
       void main() {
         vUv = uv; vec3 p = position;
@@ -398,10 +409,10 @@ function buildOwl() {
       }`,
     fragmentShader: `uniform sampler2D map; uniform sampler2D gap; uniform float shadow; varying vec2 vUv;
       void main() {
-        vec4 c = texture2D(map, vUv), g = texture2D(gap, vUv);
-        float ga = g.a * shadow, a = ga + c.a * (1. - ga);      // the shadow laid over the body
-        if (a < .004) discard;
-        gl_FragColor = vec4((g.rgb * ga + c.rgb * c.a * (1. - ga)) / a, a);
+        vec4 c = texture2D(map, vUv, ${LOD}), g = texture2D(gap, vUv, ${LOD}) * shadow;
+        vec4 o = g + c * (1. - g.a);                            // the shadow laid over the body
+        if (o.a < .004) discard;
+        gl_FragColor = o;
       }`,
   }));
   body.position.set(bcx, bcy, 0); body.renderOrder = 1; body.visible = false; owl.add(body);
@@ -420,15 +431,14 @@ function buildOwl() {
   // reach: the wing shows out to this far from the shoulder (it grows out of the folded wing, it doesn't fade in)
   const wingFS = `uniform sampler2D map; uniform float face; uniform float alpha; uniform float reach; varying vec2 vUv; varying float vR;
     void main() {
-      vec4 c = texture2D(map, vUv);
-      c.a *= alpha * (1. - smoothstep(reach - .6, reach, vR));
+      vec4 c = texture2D(map, vUv, ${LOD}) * (alpha * (1. - smoothstep(reach - .6, reach, vR)));
       if (c.a < .01) discard;
       c.rgb *= mix(.38, 1., face);
       gl_FragColor = c;
     }`;
   const hinged = (geo, dir, src, order, z, [sx, sy]) => {
     const u = { map: { value: null }, bend: { value: 0 }, dir: { value: dir }, face: { value: 1 }, alpha: { value: 1 }, reach: { value: 99 } };
-    const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({ uniforms: u, vertexShader: wingVS, fragmentShader: wingFS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({ uniforms: u, vertexShader: wingVS, fragmentShader: wingFS, transparent: true, depthWrite: false, premultipliedAlpha: true, side: THREE.DoubleSide }));
     mesh.renderOrder = order;
     const group = new THREE.Group(), [x, y] = W(...orig(sx, sy));
     group.position.set(x, y, z); group.add(mesh); group.visible = false; owl.add(group);
@@ -459,8 +469,20 @@ function buildOwl() {
     offIris: { value: [new THREE.Vector2(), new THREE.Vector2()] }, offCore: { value: [new THREE.Vector2(), new THREE.Vector2()] }, fade: { value: 1 }, lid: { value: 0 },
   };
 
+  /* every image is drawn smaller than it is (2–3 times on most screens), so each gets its smaller copies
+     (mipmaps) and anisotropic filtering: crisp crystal edges that don't shimmer as they move. It is
+     uploaded premultiplied, so the colours hidden under its transparent pixels never bleed into the
+     edges; the shaders below work in premultiplied colour. */
+  const sharpen = t => {
+    t.premultiplyAlpha = true; t.generateMipmaps = true;
+    t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter;
+    t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    return t;
+  };
   const loader = new THREE.TextureLoader();
-  const tex = src => new Promise(res => loader.load(src, t => { t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; res(t); }, undefined, () => res(null)));
+  const tex = src => new Promise(res => loader.load(src, t => res(sharpen(t)), undefined, () => res(null)));
+  // sends the images to the graphics card now, not in the middle of the first flap (a visible hitch)
+  const upload = ts => ts.forEach(t => { if (t && renderer.initTexture) renderer.initTexture(t); });
   const headImg = new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = ART.head; });
   // two stages: the owl at rest first (body, folded wings, head), then its open wings
   const restReady = Promise.all([tex(ART.body), tex(ART.gap), ...folds.map(f => tex(f.src)), headImg]).then(([b, gp, fl, fr, head]) => {
@@ -468,6 +490,7 @@ function buildOwl() {
     bodyU.map.value = b; bodyU.gap.value = gp; body.visible = true;
     folds[0].u.map.value = fl; folds[1].u.map.value = fr;
     for (const f of folds) f.group.visible = true;
+    upload([b, gp, fl, fr]);
     if (head) buildHead(head);
     return true;
   });
@@ -475,6 +498,12 @@ function buildOwl() {
   const motionReady = restReady.then(ok => ok && Promise.all(wings.map(w => tex(w.src)))).then(ts => {
     if (!ts || ts.some(t => !t)) return false;
     ts.forEach((t, i) => { wings[i].u.map.value = t; });
+    upload(ts);
+    // and draws them once, unseen (fully transparent), so the graphics card finishes setting them up
+    // now, while the page opens, and not on the first flap
+    for (const w of wings) { w.group.visible = true; w.u.alpha.value = 0; }
+    renderer.render(scene, camera);
+    for (const w of wings) { w.group.visible = false; w.u.alpha.value = 1; }
     return (moving = true);
   });
 
@@ -484,7 +513,7 @@ function buildOwl() {
     const c = document.createElement('canvas'); c.width = hw; c.height = hh;
     const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
     const px = g.getImageData(0, 0, hw, hh).data;
-    const t = new THREE.CanvasTexture(c); t.minFilter = THREE.LinearFilter; t.generateMipmaps = false;
+    const t = sharpen(new THREE.CanvasTexture(c)); upload([t]);
     const [hcx, hcy] = W(...orig(hx0 + hw / 2, hy0 + hh / 2));
     headG.position.set(hcx, hcy, .25);
     headG.userData.baseY = hcy;
@@ -513,7 +542,7 @@ function buildOwl() {
       if (ny < 0) { nx = -nx; ny = -ny; }                                                           // normal points down, away from the brow
       eyeU.brow.value[i].set(nx, ny, -(nx * x1 + ny * y1) - 3);                                     // 3px safety margin under the brow
     });
-    const head = new THREE.Mesh(geo, new THREE.ShaderMaterial({ uniforms: eyeU, vertexShader: HEAD_VS, fragmentShader: HEAD_FS, transparent: true }));
+    const head = new THREE.Mesh(geo, new THREE.ShaderMaterial({ uniforms: eyeU, vertexShader: HEAD_VS, fragmentShader: HEAD_FS, transparent: true, premultipliedAlpha: true }));
     head.renderOrder = 2;
     headG.add(head);
   }
@@ -558,16 +587,39 @@ function buildOwl() {
 
 function smoothstep(a, b, v) { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); }
 
-/* one tab change. Keys: [second, value, easing]. The wings open (0–.55s, under the finger while
-   scrolling), beat twice with a bird's rhythm, a slower lift and a quick, hard stroke down (the
-   second smaller), settle, and fold back onto the body. */
-const SPREAD = [[0, 0], [.55, 1, 'inOutSine'], [1.75, 1], [2.45, 0, 'inOutSine']];
-const BEAT = [[0, 0], [.55, 0], [.82, .5, 'outSine'], [1.0, -.36, 'inQuad'], [1.26, .3, 'outSine'], [1.42, -.22, 'inQuad'], [1.66, 0, 'outSine'], [2.45, 0]];
+/* a smooth path through keys [second, value]: a monotone cubic (PCHIP). It passes every key without
+   overshooting, comes to rest at each turning point and at both ends, and never changes speed abruptly
+   anywhere, so nothing stops dead or reverses in a single frame. */
+function curve(keys) {
+  const n = keys.length, T = keys.map(k => k[0]), V = keys.map(k => k[1]), m = new Array(n).fill(0), d = [];
+  for (let i = 0; i < n - 1; i++) d.push((V[i + 1] - V[i]) / (T[i + 1] - T[i]));
+  for (let i = 1; i < n - 1; i++) {
+    if (d[i - 1] * d[i] <= 0) continue;                         // a turning point (or a hold): at rest
+    const h0 = T[i] - T[i - 1], h1 = T[i + 1] - T[i], w1 = 2 * h1 + h0, w2 = h1 + 2 * h0;
+    m[i] = (w1 + w2) / (w1 / d[i - 1] + w2 / d[i]);
+  }
+  const f = t => {
+    if (t <= T[0]) return V[0];
+    if (t >= T[n - 1]) return V[n - 1];
+    let i = 0; while (t > T[i + 1]) i++;
+    const h = T[i + 1] - T[i], u = (t - T[i]) / h, u2 = u * u, u3 = u2 * u;
+    return (2 * u3 - 3 * u2 + 1) * V[i] + (u3 - 2 * u2 + u) * h * m[i] + (3 * u2 - 2 * u3) * V[i + 1] + (u3 - u2) * h * m[i + 1];
+  };
+  f.keys = keys;
+  return f;
+}
+
+/* one tab change, in seconds. The wings open (0–.55s, under the finger while scrolling) and, before
+   they are all the way out, start their first lift; they beat twice with a bird's rhythm, a slower
+   lift and a quicker stroke down (the second smaller), settle, and fold back onto the body as they
+   settle, without a pause anywhere. */
+const SPREAD = curve([[0, 0], [.55, 1], [1.78, 1], [2.45, 0]]);
+const BEAT = curve([[0, 0], [.36, 0], [.68, .48], [.88, -.36], [1.12, .3], [1.29, -.22], [1.52, .06], [1.8, 0], [2.45, 0]]);
 /* the body goes with the wings (in the client's image px): it gathers itself as they open, is
-   lifted by each stroke down and sinks a little as they rise, and settles as they fold; tipping
-   toward us while they beat (radians) */
-const LIFT = [[0, 0], [.3, -8, 'inOutSine'], [.62, 4, 'inOutSine'], [.84, -4, 'inOutSine'], [1.04, 20, 'outSine'], [1.28, 3, 'inOutSine'], [1.46, 14, 'outSine'], [1.8, 0, 'inOutSine'], [2.22, -4, 'inOutSine'], [2.45, 0, 'inOutSine']];
-const LEAN = [[0, 0], [.5, .06, 'inOutSine'], [.84, .11, 'inOutSine'], [1.04, .05, 'inOutSine'], [1.28, .11, 'inOutSine'], [1.46, .06, 'inOutSine'], [1.9, .02, 'inOutSine'], [2.45, 0, 'inOutSine']];
+   lifted by each stroke down (just after it) and sinks a little as they rise, and settles as they
+   fold; tipping toward us while they beat (radians) */
+const LIFT = curve([[0, 0], [.26, -8], [.58, 3], [.72, -3], [.94, 20], [1.14, 4], [1.34, 14], [1.64, 2], [1.95, 0], [2.25, -4], [2.45, 0]]);
+const LEAN = curve([[0, 0], [.45, .06], [.72, .11], [.94, .05], [1.14, .11], [1.34, .06], [1.8, .02], [2.45, 0]]);
 const DUR = { flap: 2.45, fade: .45 };
 /* the wings' rig. The open wing starts drooped (droop, radians) along the body, turned away (swing)
    and smaller (small); the folded one swings out (foldTurn) and turns (foldSwing), reaching a little
@@ -575,14 +627,9 @@ const DUR = { flap: 2.45, fade: .45 };
    (reach, world units from the shoulder past its tips) and takes over. The head rises with the body
    only partly (a bird holds its head still). */
 const RIG = { droop: 1.23, swing: .9, small: .62, foldTurn: .55, foldSwing: .55, foldReach: .2, handoff: [.1, .36], reach: 5.2, headFollow: .8 };
-function keyed(keys, t) {
-  if (t <= 0) return keys[0][1];
-  for (let i = 1; i < keys.length; i++) {
-    const [t1, f1, e] = keys[i];
-    if (t <= t1) { const [t0, f0] = keys[i - 1]; return lerp(f0, f1, ease[e || 'lin']((t - t0) / (t1 - t0))); }
-  }
-  return keys[keys.length - 1][1];
-}
+// how much of the way to its target a value moves in dt seconds, if it closes the gap with time constant tau:
+// the same motion at 30, 60 or 120 frames a second
+const follow = (dt, tau) => 1 - Math.exp(-dt / tau);
 
 /* ------------------------------------------------------------------ */
 /*  background: the end of the world. Embers rise through a red haze    */
@@ -934,7 +981,10 @@ const tree = (() => {
       bh += `<i style="left:${tx.toFixed(1)}px;top:${(ty - 3).toFixed(1)}px"></i>`;
       // the light's way: from the talons along the limb to the fork, then down the offshoot
       const way = []; for (let x = cx; side < 0 ? x >= fxp : x <= fxp; x += side * 6) way.push([x, yAt(x)]);
-      pl += `<polyline points="${P([...way, ...pts.filter((_, k) => k % 2 === 0)])}"/>`;
+      // its glow is a wide, faint stroke under the line, not a blur filter: a filter is redrawn every frame
+      // while the light runs, and that cost the tab change a fifth of its frames
+      const wp = P([...way, ...pts.filter((_, k) => k % 2 === 0)]);
+      pl += `<g><polyline class="halo" points="${wp}"/><polyline class="halo2" points="${wp}"/><polyline points="${wp}"/></g>`;
     });
     // a few bare twigs of its own, up from the limb, away from the talons and the offshoots
     for (const u of [-.42, -.27, .31, .44]) {
@@ -968,19 +1018,20 @@ const tree = (() => {
     fire.layout(W, H, spots);
     budBox.innerHTML = bh;
     buds = [...budBox.children];
-    fx.innerHTML = `<defs><filter id="treeGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#treeGlow)">${pl}</g>`;
-    pulses = [...fx.querySelectorAll('polyline')];
+    fx.innerHTML = pl;
+    pulses = [...fx.children].map(g => [...g.children]);
     buds.forEach((b, k) => b.classList.toggle('on', k === on));
   }
   function setActive(i, glow) {
     on = i;
     buds.forEach((b, k) => b.classList.toggle('on', k === i));
-    const p = pulses[i];
-    if (!glow || !p || reduce || !p.getTotalLength) return;
-    const L = p.getTotalLength(), seg = Math.min(60, L * .3);
-    p.animate([{ strokeDasharray: `${seg} ${L + seg}`, strokeDashoffset: seg, opacity: 1 },
-               { strokeDasharray: `${seg} ${L + seg}`, strokeDashoffset: -L, opacity: 1 }],
-              { duration: 600 + L * .7, easing: 'cubic-bezier(.4,0,.2,1)' });
+    const lines = pulses[i];
+    if (!glow || !lines || reduce || !lines[0].getTotalLength) return;
+    const L = lines[0].getTotalLength(), seg = Math.min(60, L * .3);
+    for (const p of lines)
+      p.animate([{ strokeDasharray: `${seg} ${L + seg}`, strokeDashoffset: seg, opacity: 1 },
+                 { strokeDasharray: `${seg} ${L + seg}`, strokeDashoffset: -L, opacity: 1 }],
+                { duration: 600 + L * .7, easing: 'cubic-bezier(.4,0,.2,1)' });
   }
   return { build, setActive };
 })();
@@ -995,15 +1046,19 @@ function layout() {
   embers.resize(w, h);
   if (!gl) { owlCenterY = eyeY = perch / 2; docEl.style.setProperty('--tail', '40px'); $('#talons').style.display = 'none'; tree.build(perch, w, h, 40, .5); return; }
   const { renderer, camera, owlRoot } = gl;
-  renderer.setSize(w, h, false);
-  camera.aspect = w / h; camera.updateProjectionMatrix();
   const visH = 2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   const ppu = h / visH;
-  // fit ear tips to talons between the header and the perch; the spread frames are only as wide as the GIF
+  // fit ear tips to talons between the header and the perch
   const s = Math.min((perch - header - 30) / (OWL.H * ppu), (w * .96) / (OWL.W * ppu));
   owlRoot.scale.setScalar(s);
   owlRoot.position.y = (.5 - perch / h) * visH - s * OWL.GRIP_Y;
   const px = s * ppu;
+  // the owl's canvas covers only the owl's part of the screen, from the top to just below its tail:
+  // the view is still the whole screen's (a view offset), so nothing above changes, but the graphics
+  // card fills and composites about half the pixels every frame
+  const ch = Math.min(h, Math.ceil(perch + OWL.TAIL * px + 48));
+  renderer.setSize(w, ch, false); renderer.domElement.style.height = ch + 'px';
+  camera.aspect = w / h; camera.setViewOffset(w, h, 0, 0, w, ch);
   owlPx = px; perchPx = perch;
   owlCenterY = perch - OWL.H * px / 2;
   eyeY = perch - (OWL.EYE_Y - OWL.GRIP_Y) * px;
@@ -1052,6 +1107,9 @@ function begin(from, to, dir, scrub, owl = true) {
   const el = PANELS[to];
   el.scrollTop = 0;
   el.classList.add('is-entering');
+  // what moves during the change gets its own layer for the length of it: the browser then moves it
+  // instead of repainting the panel around it every frame
+  for (const k of [el, ...tr.kids, ...(from != null ? [PANELS[from]] : [])]) k.style.willChange = 'transform, opacity';
   paintIn(0);
   if (!scrub) commit();
 }
@@ -1086,7 +1144,10 @@ function rewind() {                          // let go too early: fold the wings
   tr.rewind = { from: tr.t, t0: performance.now() };
 }
 function timelineT(now) {
-  if (tr.scrub) { tr.t += (tr.target - tr.t) * .25; return tr.t; }          // follows the finger, smoothed
+  if (tr.scrub) {                                                             // follows the finger, smoothed by time
+    const dt = Math.min(.25, (now - (tr.last || now)) / 1000); tr.last = now;
+    tr.t += (tr.target - tr.t) * follow(dt, .06); return tr.t;
+  }
   if (tr.rewind) return Math.max(0, tr.rewind.from - (now - tr.rewind.t0) / 1000 * 1.3 / slow());
   return (now - tr.t0) / 1000 / slow();
 }
@@ -1102,7 +1163,8 @@ function paintIn(t) {
       ? `polygon(0% 0%,50% 0%,100% 0%,100% ${S}%,50% ${C}%,0% ${S}%)`
       : `polygon(0% 100%,50% 100%,100% 100%,100% ${100 - S}%,50% ${100 - C}%,0% ${100 - S}%)`;
     const y = v => (dir > 0 ? v : 100 - v) / 100 * H;
-    edgeLine.setAttribute('points', `0,${y(S)} ${W / 2},${y(C)} ${W},${y(S)}`);
+    const pts = `0,${y(S)} ${W / 2},${y(C)} ${W},${y(S)}`;
+    for (const l of edgeLine.children) l.setAttribute('points', pts);
     edgeLine.setAttribute('opacity', (r > 0 && r < 1 ? Math.sin(Math.PI * r) : 0).toFixed(3));
     staggerKids(kids, t, .72, dir);
   } else {
@@ -1130,7 +1192,7 @@ function paintOut(t) {
 }
 
 function clearStyles(el) {
-  for (const p of ['opacity', 'transform', 'filter', 'clipPath']) el.style[p] = '';
+  for (const p of ['opacity', 'transform', 'filter', 'clipPath', 'willChange']) el.style[p] = '';
 }
 
 // advances the content; returns the timeline second for the owl (null when nothing is moving)
@@ -1275,19 +1337,21 @@ function frame(now) {
   embers.step(now);
   fire.step(now);
   if (!gl) return;
-  const dt = Math.max(1 / 240, Math.min(.05, (now - (lastNow || now)) / 1000)); lastNow = now;
-  const s = t != null ? keyed(SPREAD, t) : 0, b = t != null ? keyed(BEAT, t) : 0;
+  // the real time since the last frame (a late frame is not shortened: speeds stay true, and every
+  // smoothing below closes its gap by time, not by frame)
+  const dt = Math.max(1 / 240, Math.min(.25, (now - (lastNow || now)) / 1000)); lastNow = now;
+  const s = t != null ? SPREAD(t) : 0, b = t != null ? BEAT(t) : 0;
   // the outer feathers trail the motion: against a stroke up they lag down, and the other way
   const vs = (s - sPrev) / dt, vb = (b - bPrev) / dt; sPrev = s; bPrev = b;
-  bend += (clamp(-(vb * .03 + vs * .07), -.18, .18) - bend) * .25;
+  bend += (clamp(-(vb * .03 + vs * .07), -.18, .18) - bend) * follow(dt, .06);
   // the body goes with the wings; at rest it breathes, slowly
   const br = reduce ? 0 : Math.sin(now / 1000 * Math.PI * 2 / 4.4) * (1 - s);
-  const lift = ((t != null ? keyed(LIFT, t) : 0) + 1.6 * br) * S0 / ART.unit;
-  gl.setPose(s, b, bend, lift, .03 * s + .007 * br, t != null ? keyed(LEAN, t) : 0);
+  const lift = ((t != null ? LIFT(t) : 0) + 1.6 * br) * S0 / ART.unit;
+  gl.setPose(s, b, bend, lift, .03 * s + .007 * br, t != null ? LEAN(t) : 0);
   // every beat of the wings blows the embers away and bends the flames
   const moved = Math.abs(vb) + Math.abs(vs) * 1.4;
   if (moved > .08) {
-    const p = moved * dt * 2.4;
+    const p = moved * Math.min(dt, .05) * 2.4;
     embers.gust(innerWidth / 2, owlCenterY, p); fire.gust(innerWidth / 2, perchPx, p);
   }
   // the red glow behind the owl swells as the wings open
@@ -1312,11 +1376,11 @@ function frame(now) {
     Object.assign(idle, { x: .22 + Math.random() * .56, y: .25 + Math.random() * .45, next: now + 2200 + Math.random() * 3400,
                           roll: curious ? (Math.random() < .5 ? -1 : 1) * (.1 + Math.random() * .09) : 0 });
   }
-  const tx = alone ? (tilt ? tilt.x : idle.x) : mx, ty = alone ? (tilt ? tilt.y : idle.y) : my, calm = alone ? .05 : .14;
+  const tx = alone ? (tilt ? tilt.x : idle.x) : mx, ty = alone ? (tilt ? tilt.y : idle.y) : my, calm = follow(dt, alone ? .33 : .11);
   const px = tx * innerWidth, py = ty * innerHeight, cx = innerWidth / 2;
   hx += (clamp(Math.atan2(px - cx, D) * .72 * aim, -.4, .4) - hx) * calm;
   hy += (clamp(Math.atan2(py - eyeY, D) * .6 * aim, -.26, .26) - hy) * calm;
-  roll += ((alone && !tilt && !reduce ? idle.roll : 0) - roll) * .045;
+  roll += ((alone && !tilt && !reduce ? idle.roll : 0) - roll) * follow(dt, .36);
   const st = (now - shakeT0) / 1000;
   const shake = st < .8 ? Math.sin(st * 24) * Math.exp(-st * 4.5) : 0;
   gl.headG.rotation.set(hy, hx + shake * .2, -hx * .07 + roll);
@@ -1324,7 +1388,7 @@ function frame(now) {
     const exs = cx + eyeX[i] * owlPx;
     let ox = (Math.atan2(px - exs, D) * aim - hx) * 17, oy = (Math.atan2(py - eyeY, D) * aim - hy) * 17;
     const l = Math.hypot(ox, oy); if (l > 6) { ox *= 6 / l; oy *= 6 / l; }   // pupil travel, in the client's image px
-    eo[i][0] += (ox - eo[i][0]) * .3; eo[i][1] += (oy - eo[i][1]) * .3;
+    const k = follow(dt, .047); eo[i][0] += (ox - eo[i][0]) * k; eo[i][1] += (oy - eo[i][1]) * k;
     gl.eyeU.offIris.value[i].set(eo[i][0], eo[i][1]);
     gl.eyeU.offCore.value[i].set(eo[i][0] * .8, eo[i][1] * .8);
   }
@@ -1333,7 +1397,7 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 
-if (DEBUG) window.__shadows = { go, RIG, LIFT, LEAN, get gl() { return gl; }, get state() { return tr ? { to: tr.to, scrub: tr.scrub, rewind: !!tr.rewind, t: +tr.t.toFixed(3) } : null; } };
+if (DEBUG) window.__shadows = { go, RIG, SPREAD, BEAT, LIFT, LEAN, get gl() { return gl; }, get state() { return tr ? { to: tr.to, scrub: tr.scrub, rewind: !!tr.rewind, t: +tr.t.toFixed(3) } : null; } };
 
 /* opening: the branch grows in from the left and the owl, at rest, appears on it; then the offshoots
    and their tabs appear and the first tab is laid out. The wings start moving once their frames are in. */
