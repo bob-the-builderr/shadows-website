@@ -44,8 +44,15 @@ smaller than its images, which it is on nearly every screen.
 How the wings open, beat and fold, and how the body goes with them, is tuned by `SPREAD`, `BEAT`,
 `LIFT`, `LEAN` and `RIG` in `index.html`.
 
+## Preview
+
+A preview for the client is published with GitHub Pages from `main`:
+https://bob-the-builderr.github.io/shadows-website/ (every push to `main` updates it within a minute
+or two). It asks search engines not to index it (`<meta name="robots" content="noindex">`).
+
 ## Before launch
 
-- In `index.html`, make `og:image` an absolute address on the site's domain and add `og:url`.
+- In `index.html`, remove the `noindex` line, point `og:url` and `og:image` at the site's domain, and
+  add a canonical link.
 - Fill in the real work, the contact buttons (email, WhatsApp) and, in the search-engine data
   (`application/ld+json`), the site's address, logo and social accounts.
