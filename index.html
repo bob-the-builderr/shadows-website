@@ -274,21 +274,28 @@ const ease = {
 
 /* ------------------------------------------------------------------ */
 /*  The owl. Everything in it is the client's own artwork. Its body,   */
-/*  head and talons are the perched image and never change; its head  */
-/*  is a layer of its own that turns to look at the mouse. Its open    */
-/*  wings are cut from the client's spread-wing image, each a layer    */
-/*  hinged at its shoulder behind the body: hidden at rest, they swing  */
-/*  out, beat and fold back on every tab change, their outer feathers  */
-/*  trailing the motion.                                               */
+/*  head, talons and folded wings are cut from the perched image; its  */
+/*  head turns to look at the mouse. On every tab change the folded    */
+/*  wings lift off the body and open into the open wings (cut from the */
+/*  client's spread-wing image, hinged at the same shoulders, behind   */
+/*  the body), beat and fold back, the outer feathers trailing; the    */
+/*  body rises and tips with the strokes while the talons hold on.     */
 /*  Units: px of a 1366-wide frame around the owl, 100 to a world unit. */
 /* ------------------------------------------------------------------ */
 const small = innerWidth < 760 || coarse;                     // phones get lighter images
 const S0 = 768 / 1337, OX0 = 516 * S0, OY0 = 170 * S0;          // the client's perched image px -> frame px
 const orig = (x, y) => [x * S0 + OX0, y * S0 + OY0];
 const ART = {
-  rest: small ? 'assets/owl-rest-m.webp' : 'assets/owl-rest.webp', head: 'assets/owl-head.webp',
+  body: small ? 'assets/owl-body-m.webp' : 'assets/owl-body.webp', head: 'assets/owl-head.webp',
   unit: 100,                                                    // frame px per world unit
-  restBox: [330, 80, 690, 990],                                 // the rest image, in the client's image
+  restBox: [330, 80, 690, 990],                                 // the body image, in the client's image
+  // the folded wings, cut from the perched owl: each lifts off the body from its shoulder (the open
+  // wing's shoulder, in the client's image px) and hands over to the open wing
+  folds: [
+    { src: small ? 'assets/owl-fold-l-m.webp' : 'assets/owl-fold-l.webp', box: [336, 296, 226, 516], dir: -1 },
+    { src: small ? 'assets/owl-fold-r-m.webp' : 'assets/owl-fold-r.webp', box: [784, 296, 226, 516], dir: 1 },
+  ],
+  legs: [838, 700],                                             // the toes' top, and where the legs end in the body
   axis: 683, top: orig(0, 105)[1], grip: orig(0, 905)[1], tail: orig(0, 1039)[1],   // ear tips, the branch's middle under the toes, tail tip
   talonsBox: [515, 832, 320, 140],                              // the talons layer, in the client's image
   feet: 142 * S0, bodyW: 620 * S0,
@@ -370,20 +377,30 @@ function buildOwl() {
   const owl = new THREE.Group(); owlRoot.add(owl);           // hops a little while flapping
   const headG = new THREE.Group(); owl.add(headG);
 
-  // a flat layer of the client's image (box in its px), placed where it belongs on the owl
-  const layer = (box, order, z = 0) => {
-    const [x0, y0, w, h] = box;
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w * S0 / ART.unit, h * S0 / ART.unit),
-      new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, opacity: 1 }));
-    m.position.set(...W(...orig(x0 + w / 2, y0 + h / 2)), z);
-    m.renderOrder = order; m.visible = false; owl.add(m);
-    return m;
+  // the body: the perched owl without its folded wings (where they lay, the chest goes on). It stands on
+  // its legs: lifted, the toes stay on the branch and only the legs stretch; it fills out across the chest.
+  const [bx0, by0, bw0, bh0] = ART.restBox, [bcx, bcy] = W(...orig(bx0 + bw0 / 2, by0 + bh0 / 2));
+  const bodyU = {
+    map: { value: null }, lift: { value: 0 }, puff: { value: 0 },
+    legs: { value: new THREE.Vector3(W(0, orig(0, ART.legs[0])[1])[1] - bcy, W(0, orig(0, ART.legs[1])[1])[1] - bcy, -bcx) },
   };
-  // at rest: the whole perched owl, folded wings and all
-  const rest = layer(ART.restBox, 1);
+  const body = new THREE.Mesh(new THREE.PlaneGeometry(bw0 * S0 / ART.unit, bh0 * S0 / ART.unit, 1, 80), new THREE.ShaderMaterial({
+    uniforms: bodyU, transparent: true, depthWrite: false,
+    vertexShader: `uniform float lift; uniform float puff; uniform vec3 legs; varying vec2 vUv;
+      void main() {
+        vUv = uv; vec3 p = position;
+        float w = smoothstep(legs.x, legs.y, p.y);              // 0 on the toes .. 1 above the legs
+        p.y += lift * w;
+        p.x = legs.z + (p.x - legs.z) * (1. + puff * w);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.);
+      }`,
+    fragmentShader: `uniform sampler2D map; varying vec2 vUv;
+      void main() { vec4 c = texture2D(map, vUv); if (c.a < .004) discard; gl_FragColor = c; }`,
+  }));
+  body.position.set(bcx, bcy, 0); body.renderOrder = 1; body.visible = false; owl.add(body);
 
-  // the wings, behind the body. Each hangs from its shoulder: the plane is moved so the shoulder is
-  // its origin, and the group turns. The outer feathers bend a little behind the motion (bend).
+  // a wing hangs from its shoulder: its plane is moved so the shoulder is the origin, and its group
+  // turns. The outer feathers bend a little behind the motion (bend); turned away it darkens (face).
   const wingVS = `uniform float bend; uniform float dir; varying vec2 vUv;
     void main() {
       vUv = uv;
@@ -392,25 +409,37 @@ function buildOwl() {
       p.xy = vec2(c * p.x - s * p.y, s * p.x + c * p.y);
       gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.);
     }`;
-  const wingFS = `uniform sampler2D map; uniform float face; varying vec2 vUv;
+  const wingFS = `uniform sampler2D map; uniform float face; uniform float alpha; varying vec2 vUv;
     void main() {
       vec4 c = texture2D(map, vUv);
+      c.a *= alpha;
       if (c.a < .01) discard;
-      c.rgb *= mix(.38, 1., face);                              // turned away from us, the crystal darkens
+      c.rgb *= mix(.38, 1., face);
       gl_FragColor = c;
     }`;
+  const hinged = (geo, dir, src, order, z, [sx, sy]) => {
+    const u = { map: { value: null }, bend: { value: 0 }, dir: { value: dir }, face: { value: 1 }, alpha: { value: 1 } };
+    const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({ uniforms: u, vertexShader: wingVS, fragmentShader: wingFS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    mesh.renderOrder = order;
+    const group = new THREE.Group(), [x, y] = W(...orig(sx, sy));
+    group.position.set(x, y, z); group.add(mesh); group.visible = false; owl.add(group);
+    return { group, u, dir, src, x, y, z };
+  };
+  // the open wings, from the spread-wing image, behind the body
   const toW = (ART.spread.k * S0) / ART.unit;                   // spread-image px -> world
-  const wings = ART.wings.map(w => {
+  const shoulders = ART.wings.map(w => fromSpread(...w.hinge));  // in the perched image's px
+  const wings = ART.wings.map((w, i) => {
     const [bx, by, bw, bh] = w.box, [hx, hy] = w.hinge;
     const geo = new THREE.PlaneGeometry(bw * toW, bh * toW, 40, 14);
     geo.translate((bx + bw / 2 - hx) * toW, -(by + bh / 2 - hy) * toW, 0);
-    const u = { map: { value: null }, bend: { value: 0 }, dir: { value: w.dir }, face: { value: 1 } };
-    const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({ uniforms: u, vertexShader: wingVS, fragmentShader: wingFS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
-    mesh.renderOrder = .5;
-    const group = new THREE.Group();
-    group.position.set(...W(...orig(...fromSpread(hx, hy))), -.05);
-    group.add(mesh); group.visible = false; owl.add(group);
-    return { group, u, dir: w.dir, src: w.src };
+    return hinged(geo, w.dir, w.src, .5, -.05, shoulders[i]);
+  });
+  // the folded wings, from the perched image, on the body's sides, hung from the same shoulders
+  const folds = ART.folds.map((f, i) => {
+    const [bx, by, bw, bh] = f.box, [hx, hy] = shoulders[i], k = S0 / ART.unit;
+    const geo = new THREE.PlaneGeometry(bw * k, bh * k, 12, 24);
+    geo.translate((bx + bw / 2 - hx) * k, -(by + bh / 2 - hy) * k, 0);
+    return hinged(geo, f.dir, f.src, 1.5, .02, shoulders[i]);
   });
 
   const eyeU = {
@@ -424,11 +453,12 @@ function buildOwl() {
   const loader = new THREE.TextureLoader();
   const tex = src => new Promise(res => loader.load(src, t => { t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; res(t); }, undefined, () => res(null)));
   const headImg = new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = ART.head; });
-  // two stages: the owl at rest first, then its wings
-  const setMap = (m, t) => { m.material.map = t; m.material.needsUpdate = true; m.visible = true; };
-  const restReady = Promise.all([tex(ART.rest), headImg]).then(([r, head]) => {
-    if (!r) return false;
-    setMap(rest, r);
+  // two stages: the owl at rest first (body, folded wings, head), then its open wings
+  const restReady = Promise.all([tex(ART.body), ...folds.map(f => tex(f.src)), headImg]).then(([b, fl, fr, head]) => {
+    if (!b || !fl || !fr) return false;
+    bodyU.map.value = b; body.visible = true;
+    folds[0].u.map.value = fl; folds[1].u.map.value = fr;
+    for (const f of folds) f.group.visible = true;
     if (head) buildHead(head);
     return true;
   });
@@ -479,30 +509,59 @@ function buildOwl() {
     headG.add(head);
   }
 
-  // s: how far the wings are spread (0 folded behind the body .. 1 wide open); beat: their stroke
-  // around the shoulder (radians, up is positive); bend: how far the outer feathers trail
-  function setWings(s, beat, bend) {
+  /* the pose. s: how far the wings are open (0 folded on the body .. 1 wide open); beat: their stroke
+     around the shoulder (radians, up is positive); bend: how far the outer feathers trail; lift: how
+     far the body rises off its legs (world units); puff: how much the chest fills out; lean: the body
+     tipping toward us, about the toes.
+     A folded wing lifts off the body and swings out from its shoulder, turning its face a little; the
+     open wing, hung from the same shoulder and aimed the same way, takes over under it as it goes, so
+     the eye sees one wing open. Folding back is the same, the other way. */
+  function setPose(s, beat, bend, lift, puff, lean) {
     if (!moving) s = 0;
-    const fold = 1 - s;
+    const fold = 1 - s, open = smoothstep(RIG.handoff[0], RIG.handoff[1], s), gone = smoothstep(RIG.handoff[0] + .08, RIG.handoff[1] + .08, s);
     for (const w of wings) {
-      w.group.visible = s > .004;
-      w.group.rotation.set(0, w.dir * fold * 1.42, w.dir * (beat - fold * 1.0));   // droop, then swing behind the body
-      w.group.scale.setScalar(.82 + .18 * s);
-      w.u.bend.value = bend; w.u.face.value = Math.cos(fold * 1.42);
+      w.group.visible = open > .002;
+      w.group.position.set(w.x * (1 + puff), w.y + lift, w.z);
+      w.group.rotation.set(0, w.dir * fold * RIG.swing, w.dir * (beat - fold * RIG.droop));   // droop, then turn its face away
+      w.group.scale.setScalar(RIG.small + (1 - RIG.small) * s);
+      w.u.bend.value = bend; w.u.face.value = Math.cos(fold * RIG.swing); w.u.alpha.value = open;
     }
+    const k = smoothstep(0, RIG.handoff[1] + .08, s);
+    for (const f of folds) {
+      f.group.visible = gone < .998;
+      f.group.position.set(f.x * (1 + puff), f.y + lift, f.z);
+      f.group.rotation.set(0, f.dir * k * RIG.foldSwing, f.dir * k * RIG.foldTurn);
+      f.group.scale.set(1, 1 + RIG.foldReach * k, 1);
+      f.u.face.value = Math.cos(k * RIG.foldSwing); f.u.alpha.value = 1 - gone; f.u.bend.value = bend * .5;
+    }
+    bodyU.lift.value = lift; bodyU.puff.value = puff;
+    if (headG.userData.baseY != null) headG.position.y = headG.userData.baseY + lift * RIG.headFollow;
+    // tipping toward us about the toes, which stay where they grip
+    const G = OWL.GRIP_Y;
+    owl.rotation.x = lean; owl.position.set(0, G * (1 - Math.cos(lean)), -G * Math.sin(lean));
   }
 
-  return { renderer, scene, camera, owlRoot, owl, headG, eyeU, restReady, motionReady, setWings };
+  return { renderer, scene, camera, owlRoot, owl, headG, eyeU, restReady, motionReady, setPose };
 }
 
 function smoothstep(a, b, v) { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); }
 
 /* one tab change. Keys: [second, value, easing]. The wings open (0–.55s, under the finger while
    scrolling), beat twice with a bird's rhythm, a slower lift and a quick, hard stroke down (the
-   second smaller), settle, and fold back behind the body. */
+   second smaller), settle, and fold back onto the body. */
 const SPREAD = [[0, 0], [.55, 1, 'inOutSine'], [1.75, 1], [2.45, 0, 'inOutSine']];
 const BEAT = [[0, 0], [.55, 0], [.82, .5, 'outSine'], [1.0, -.36, 'inQuad'], [1.26, .3, 'outSine'], [1.42, -.22, 'inQuad'], [1.66, 0, 'outSine'], [2.45, 0]];
+/* the body goes with the wings (in the client's image px): it gathers itself as they open, is
+   lifted by each stroke down and sinks a little as they rise, and settles as they fold; tipping
+   toward us while they beat (radians) */
+const LIFT = [[0, 0], [.3, -8, 'inOutSine'], [.62, 4, 'inOutSine'], [.84, -4, 'inOutSine'], [1.04, 20, 'outSine'], [1.28, 3, 'inOutSine'], [1.46, 14, 'outSine'], [1.8, 0, 'inOutSine'], [2.22, -4, 'inOutSine'], [2.45, 0, 'inOutSine']];
+const LEAN = [[0, 0], [.5, .06, 'inOutSine'], [.84, .11, 'inOutSine'], [1.04, .05, 'inOutSine'], [1.28, .11, 'inOutSine'], [1.46, .06, 'inOutSine'], [1.9, .02, 'inOutSine'], [2.45, 0, 'inOutSine']];
 const DUR = { flap: 2.45, fade: .45 };
+/* the wings' rig. The open wing starts drooped (droop, radians) along the body, turned away (swing)
+   and smaller (small); the folded one swings out (foldTurn) and turns (foldSwing), reaching a little
+   longer (foldReach). Between the two s values of handoff the open wing takes over. The head rises
+   with the body only partly (a bird holds its head still). */
+const RIG = { droop: 1.23, swing: .9, small: .62, foldTurn: .55, foldSwing: .55, foldReach: .2, handoff: [.1, .34], headFollow: .8 };
 function keyed(keys, t) {
   if (t <= 0) return keys[0][1];
   for (let i = 1; i < keys.length; i++) {
@@ -1208,7 +1267,10 @@ function frame(now) {
   // the outer feathers trail the motion: against a stroke up they lag down, and the other way
   const vs = (s - sPrev) / dt, vb = (b - bPrev) / dt; sPrev = s; bPrev = b;
   bend += (clamp(-(vb * .03 + vs * .07), -.18, .18) - bend) * .25;
-  gl.setWings(s, b, bend);
+  // the body goes with the wings; at rest it breathes, slowly
+  const br = reduce ? 0 : Math.sin(now / 1000 * Math.PI * 2 / 4.4) * (1 - s);
+  const lift = ((t != null ? keyed(LIFT, t) : 0) + 1.6 * br) * S0 / ART.unit;
+  gl.setPose(s, b, bend, lift, .03 * s + .007 * br, t != null ? keyed(LEAN, t) : 0);
   // every beat of the wings blows the embers away and bends the flames
   const moved = Math.abs(vb) + Math.abs(vs) * 1.4;
   if (moved > .08) {
@@ -1220,9 +1282,6 @@ function frame(now) {
   glowEl.style.opacity = (.8 + .2 * open).toFixed(3);
   glowEl.style.transform = `scale(${(1 + .16 * open).toFixed(3)})`;
 
-  // breathing: the body swells a little, slowly, around where the talons hold the branch
-  const br = Math.sin(now / 1000 * Math.PI * 2 / 4.4) * (1 - s), sy = 1 + .009 * br;
-  gl.owl.scale.set(1 + .006 * br, sy, 1); gl.owl.position.y = OWL.GRIP_Y * (1 - sy);
   // a blink every few seconds, now and then twice
   if (now > blinkAt + 180) {
     if (blinkTwice) { blinkAt = now + 120; blinkTwice = false; }
@@ -1261,7 +1320,7 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 
-if (DEBUG) window.__shadows = { go, get gl() { return gl; }, get state() { return tr ? { to: tr.to, scrub: tr.scrub, rewind: !!tr.rewind, t: +tr.t.toFixed(3) } : null; } };
+if (DEBUG) window.__shadows = { go, RIG, LIFT, LEAN, get gl() { return gl; }, get state() { return tr ? { to: tr.to, scrub: tr.scrub, rewind: !!tr.rewind, t: +tr.t.toFixed(3) } : null; } };
 
 /* opening: the branch grows in from the left and the owl, at rest, appears on it; then the offshoots
    and their tabs appear and the first tab is laid out. The wings start moving once their frames are in. */

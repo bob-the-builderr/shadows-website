@@ -28,9 +28,14 @@ npm install
 node build-owl.js
 ```
 
-It writes into `assets/`: the perched body (`owl-rest`), the head layer that turns toward the mouse
-(`owl-head`), the talons that grip the branch (`owl-talons`), the two wings (`owl-wing-l`, `owl-wing-r`),
-and the share image (`og.jpg`). The `-m` files are the lighter phone versions.
+It writes into `assets/`: the perched body without its folded wings (`owl-body`; where the wings lay,
+the chest's chevrons carry on), the two folded wings that lift off it (`owl-fold-l`, `owl-fold-r`),
+the head layer that turns toward the mouse (`owl-head`), the talons that grip the branch (`owl-talons`),
+the two open wings they hand over to (`owl-wing-l`, `owl-wing-r`), and the share image (`og.jpg`).
+The `-m` files are the lighter phone versions.
+
+How the wings open, beat and fold, and how the body goes with them, is tuned by `SPREAD`, `BEAT`,
+`LIFT`, `LEAN` and `RIG` in `index.html`.
 
 ## Before launch
 
