@@ -29,7 +29,9 @@ node build-owl.js
 ```
 
 It writes into `assets/`: the perched body without its folded wings (`owl-body`; where the wings lay,
-the chest's chevrons carry on), the two folded wings that lift off it (`owl-fold-l`, `owl-fold-r`),
+the chest's chevrons carry on, lit), the shadow the folded wings cast on it, which fades as they lift
+(`owl-body-gap`; over the body it gives back the perched owl exactly, and the build checks that),
+the two folded wings that lift off it (`owl-fold-l`, `owl-fold-r`),
 the head layer that turns toward the mouse (`owl-head`), the talons that grip the branch (`owl-talons`),
 the two open wings they hand over to (`owl-wing-l`, `owl-wing-r`), and the share image (`og.jpg`).
 The `-m` files are the lighter phone versions.

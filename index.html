@@ -287,6 +287,7 @@ const S0 = 768 / 1337, OX0 = 516 * S0, OY0 = 170 * S0;          // the client's 
 const orig = (x, y) => [x * S0 + OX0, y * S0 + OY0];
 const ART = {
   body: small ? 'assets/owl-body-m.webp' : 'assets/owl-body.webp', head: 'assets/owl-head.webp',
+  gap: small ? 'assets/owl-body-gap-m.webp' : 'assets/owl-body-gap.webp',   // the folded wings' shadow on the body
   unit: 100,                                                    // frame px per world unit
   restBox: [330, 80, 690, 990],                                 // the body image, in the client's image
   // the folded wings, cut from the perched owl: each lifts off the body from its shoulder (the open
@@ -377,11 +378,12 @@ function buildOwl() {
   const owl = new THREE.Group(); owlRoot.add(owl);           // hops a little while flapping
   const headG = new THREE.Group(); owl.add(headG);
 
-  // the body: the perched owl without its folded wings (where they lay, the chest goes on). It stands on
-  // its legs: lifted, the toes stay on the branch and only the legs stretch; it fills out across the chest.
+  // the body: the perched owl without its folded wings (where they lay, the chest goes on), and over it
+  // the shadow the folded wings cast on it, which fades as they lift. It stands on its legs: lifted,
+  // the toes stay on the branch and only the legs stretch; it fills out across the chest.
   const [bx0, by0, bw0, bh0] = ART.restBox, [bcx, bcy] = W(...orig(bx0 + bw0 / 2, by0 + bh0 / 2));
   const bodyU = {
-    map: { value: null }, lift: { value: 0 }, puff: { value: 0 },
+    map: { value: null }, gap: { value: null }, shadow: { value: 1 }, lift: { value: 0 }, puff: { value: 0 },
     legs: { value: new THREE.Vector3(W(0, orig(0, ART.legs[0])[1])[1] - bcy, W(0, orig(0, ART.legs[1])[1])[1] - bcy, -bcx) },
   };
   const body = new THREE.Mesh(new THREE.PlaneGeometry(bw0 * S0 / ART.unit, bh0 * S0 / ART.unit, 1, 80), new THREE.ShaderMaterial({
@@ -394,31 +396,38 @@ function buildOwl() {
         p.x = legs.z + (p.x - legs.z) * (1. + puff * w);
         gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.);
       }`,
-    fragmentShader: `uniform sampler2D map; varying vec2 vUv;
-      void main() { vec4 c = texture2D(map, vUv); if (c.a < .004) discard; gl_FragColor = c; }`,
+    fragmentShader: `uniform sampler2D map; uniform sampler2D gap; uniform float shadow; varying vec2 vUv;
+      void main() {
+        vec4 c = texture2D(map, vUv), g = texture2D(gap, vUv);
+        float ga = g.a * shadow, a = ga + c.a * (1. - ga);      // the shadow laid over the body
+        if (a < .004) discard;
+        gl_FragColor = vec4((g.rgb * ga + c.rgb * c.a * (1. - ga)) / a, a);
+      }`,
   }));
   body.position.set(bcx, bcy, 0); body.renderOrder = 1; body.visible = false; owl.add(body);
 
   // a wing hangs from its shoulder: its plane is moved so the shoulder is the origin, and its group
   // turns. The outer feathers bend a little behind the motion (bend); turned away it darkens (face).
-  const wingVS = `uniform float bend; uniform float dir; varying vec2 vUv;
+  const wingVS = `uniform float bend; uniform float dir; varying vec2 vUv; varying float vR;
     void main() {
       vUv = uv;
       vec3 p = position;
+      vR = length(p.xy);                                        // how far from the shoulder
       float a = dir * bend * smoothstep(.6, 4.2, length(p.xy)), c = cos(a), s = sin(a);
       p.xy = vec2(c * p.x - s * p.y, s * p.x + c * p.y);
       gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.);
     }`;
-  const wingFS = `uniform sampler2D map; uniform float face; uniform float alpha; varying vec2 vUv;
+  // reach: the wing shows out to this far from the shoulder (it grows out of the folded wing, it doesn't fade in)
+  const wingFS = `uniform sampler2D map; uniform float face; uniform float alpha; uniform float reach; varying vec2 vUv; varying float vR;
     void main() {
       vec4 c = texture2D(map, vUv);
-      c.a *= alpha;
+      c.a *= alpha * (1. - smoothstep(reach - .6, reach, vR));
       if (c.a < .01) discard;
       c.rgb *= mix(.38, 1., face);
       gl_FragColor = c;
     }`;
   const hinged = (geo, dir, src, order, z, [sx, sy]) => {
-    const u = { map: { value: null }, bend: { value: 0 }, dir: { value: dir }, face: { value: 1 }, alpha: { value: 1 } };
+    const u = { map: { value: null }, bend: { value: 0 }, dir: { value: dir }, face: { value: 1 }, alpha: { value: 1 }, reach: { value: 99 } };
     const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({ uniforms: u, vertexShader: wingVS, fragmentShader: wingFS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
     mesh.renderOrder = order;
     const group = new THREE.Group(), [x, y] = W(...orig(sx, sy));
@@ -454,9 +463,9 @@ function buildOwl() {
   const tex = src => new Promise(res => loader.load(src, t => { t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; res(t); }, undefined, () => res(null)));
   const headImg = new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = ART.head; });
   // two stages: the owl at rest first (body, folded wings, head), then its open wings
-  const restReady = Promise.all([tex(ART.body), ...folds.map(f => tex(f.src)), headImg]).then(([b, fl, fr, head]) => {
-    if (!b || !fl || !fr) return false;
-    bodyU.map.value = b; body.visible = true;
+  const restReady = Promise.all([tex(ART.body), tex(ART.gap), ...folds.map(f => tex(f.src)), headImg]).then(([b, gp, fl, fr, head]) => {
+    if (!b || !gp || !fl || !fr) return false;
+    bodyU.map.value = b; bodyU.gap.value = gp; body.visible = true;
     folds[0].u.map.value = fl; folds[1].u.map.value = fr;
     for (const f of folds) f.group.visible = true;
     if (head) buildHead(head);
@@ -514,19 +523,21 @@ function buildOwl() {
      far the body rises off its legs (world units); puff: how much the chest fills out; lean: the body
      tipping toward us, about the toes.
      A folded wing lifts off the body and swings out from its shoulder, turning its face a little; the
-     open wing, hung from the same shoulder and aimed the same way, takes over under it as it goes, so
-     the eye sees one wing open. Folding back is the same, the other way. */
+     open wing, hung from the same shoulder and aimed the same way, grows out from under it, from the
+     shoulder to the tips, and the folded one gives way, so the eye sees one wing open. Folding back is
+     the same, the other way: the open wing draws in to the shoulder under the folded one. */
   function setPose(s, beat, bend, lift, puff, lean) {
     if (!moving) s = 0;
-    const fold = 1 - s, open = smoothstep(RIG.handoff[0], RIG.handoff[1], s), gone = smoothstep(RIG.handoff[0] + .08, RIG.handoff[1] + .08, s);
+    const [h0, h1] = RIG.handoff, fold = 1 - s, grow = smoothstep(h0, h1, s), gone = smoothstep(h0 + .1, h1 + .06, s);
     for (const w of wings) {
-      w.group.visible = open > .002;
+      w.group.visible = s > h0 - .02;
       w.group.position.set(w.x * (1 + puff), w.y + lift, w.z);
       w.group.rotation.set(0, w.dir * fold * RIG.swing, w.dir * (beat - fold * RIG.droop));   // droop, then turn its face away
       w.group.scale.setScalar(RIG.small + (1 - RIG.small) * s);
-      w.u.bend.value = bend; w.u.face.value = Math.cos(fold * RIG.swing); w.u.alpha.value = open;
+      w.u.bend.value = bend; w.u.face.value = Math.cos(fold * RIG.swing);
+      w.u.alpha.value = smoothstep(h0 - .02, h0 + .05, s); w.u.reach.value = lerp(.3, RIG.reach, grow);
     }
-    const k = smoothstep(0, RIG.handoff[1] + .08, s);
+    const k = smoothstep(0, h1 + .08, s);
     for (const f of folds) {
       f.group.visible = gone < .998;
       f.group.position.set(f.x * (1 + puff), f.y + lift, f.z);
@@ -535,6 +546,7 @@ function buildOwl() {
       f.u.face.value = Math.cos(k * RIG.foldSwing); f.u.alpha.value = 1 - gone; f.u.bend.value = bend * .5;
     }
     bodyU.lift.value = lift; bodyU.puff.value = puff;
+    bodyU.shadow.value = 1 - smoothstep(.02, RIG.handoff[1] - .04, s);   // the folded wings' shadow goes with them
     if (headG.userData.baseY != null) headG.position.y = headG.userData.baseY + lift * RIG.headFollow;
     // tipping toward us about the toes, which stay where they grip
     const G = OWL.GRIP_Y;
@@ -559,9 +571,10 @@ const LEAN = [[0, 0], [.5, .06, 'inOutSine'], [.84, .11, 'inOutSine'], [1.04, .0
 const DUR = { flap: 2.45, fade: .45 };
 /* the wings' rig. The open wing starts drooped (droop, radians) along the body, turned away (swing)
    and smaller (small); the folded one swings out (foldTurn) and turns (foldSwing), reaching a little
-   longer (foldReach). Between the two s values of handoff the open wing takes over. The head rises
-   with the body only partly (a bird holds its head still). */
-const RIG = { droop: 1.23, swing: .9, small: .62, foldTurn: .55, foldSwing: .55, foldReach: .2, handoff: [.1, .34], headFollow: .8 };
+   longer (foldReach). Between the two s values of handoff the open wing grows out to its full length
+   (reach, world units from the shoulder past its tips) and takes over. The head rises with the body
+   only partly (a bird holds its head still). */
+const RIG = { droop: 1.23, swing: .9, small: .62, foldTurn: .55, foldSwing: .55, foldReach: .2, handoff: [.1, .36], reach: 5.2, headFollow: .8 };
 function keyed(keys, t) {
   if (t <= 0) return keys[0][1];
   for (let i = 1; i < keys.length; i++) {

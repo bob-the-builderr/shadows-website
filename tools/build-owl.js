@@ -53,7 +53,7 @@ function solidify(a, w, h, R, region, thr = 110, top = true) {
   }
 }
 // crop an RGBA buffer, optionally multiplying its alpha by a mask, and write it (plus a phone size)
-async function save(rgba, W, [x0, y0, w, h], name, { mask, q = 92, phone = .55 } = {}) {
+async function save(rgba, W, [x0, y0, w, h], name, { mask, q = 92, phone = .55, lossless = false } = {}) {
   const buf = Buffer.alloc(w * h * 4);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const i = (y0 + y) * W + x0 + x, d = (y * w + x) * 4;
@@ -61,8 +61,8 @@ async function save(rgba, W, [x0, y0, w, h], name, { mask, q = 92, phone = .55 }
     buf[d + 3] = Math.round(rgba[i * 4 + 3] * (mask ? mask[i] : 1));
   }
   const img = () => sharp(buf, { raw: { width: w, height: h, channels: 4 } });
-  await img().webp({ quality: q, alphaQuality: 95, effort: 6 }).toFile(path.join(OUT, name + '.webp'));
-  if (phone) await img().resize(Math.round(w * phone)).webp({ quality: q - 4, alphaQuality: 92, effort: 6 }).toFile(path.join(OUT, name + '-m.webp'));
+  await img().webp(lossless ? { lossless: true, effort: 6 } : { quality: q, alphaQuality: 95, effort: 6 }).toFile(path.join(OUT, name + '.webp'));
+  if (phone) await img().resize(Math.round(w * phone)).webp(lossless ? { lossless: true, effort: 6 } : { quality: q - 4, alphaQuality: 92, effort: 6 }).toFile(path.join(OUT, name + '-m.webp'));
   console.log(name, [x0, y0, w, h].join(','));
 }
 
@@ -100,30 +100,54 @@ function sample(a, W, H, x, y) {
   return o;                                               // premultiplied rgb, alpha 0..1
 }
 
-/* the body without its folded wings. Where a wing lay, the chest goes on: every chevron is carried
-   outward along its own arm (the texture is read from inside the chest, further down that arm), a
-   little darker as the chest turns away to the side. */
+/* the body without its folded wings, and the shadow those wings cast on it.
+   With the wings open, the chest goes on to the flanks: every chevron is carried outward along its
+   own arm from OPEN_EDGE (the texture is read from the chevrons' lit middles, further down the same
+   arm), a little darker toward the side. That replaces both the wing and the dark gap the folded wing
+   leaves beside the chest, which is its shadow. The shadow is kept as a layer of its own (gap): over
+   the body it gives back the perched owl exactly, and it fades as the wing lifts. */
+const OPEN_EDGE = 612;                                    // left side; inside this the chest is as drawn
 function wingless(rest, W, H, foldM) {
-  const body = Buffer.from(rest);
+  const body = Buffer.from(rest), gap = Buffer.alloc(W * H * 4);
+  const faceLine = lx => 350 + (lx - 513) * 110 / 160;  // the head's lower edge beside the chest (under it: the head)
   for (let i = 0; i < W * H; i++) {
-    const fm = foldM.l[i] + foldM.r[i]; if (fm <= 0) continue;
     const x = i % W, y = (i / W) | 0, left = x < MID, lx = left ? x : 2 * MID - x;   // lx: as if on the left
-    const d = Math.max(0, CHEST_EDGE - lx);               // how far out of the chest
-    const xs = left ? CHEST_EDGE + 4 + .45 * d : 2 * MID - CHEST_EDGE - 4 - .45 * d;
-    const ys = y + Math.abs(xs - x);                      // the chevrons' arms slope at about 1:1
-    const [r, g, b, a] = sample(rest, W, H, xs, ys);
-    const out = flankEdge(y), inside = Math.min(1, Math.max(0, (lx - out) / 1.6 + .5)) * (y >= 338 ? 1 : 0);
-    const shade = (.95 - .45 * sstep(0, 72, d)) * (.72 + .28 * sstep(0, 9, lx - out)), fa = a * inside;
-    // premultiplied mix of what was there (the wing, now cut away) and the flank, by the wing's mask
-    const o = i * 4, ra = rest[o + 3] / 255 * (1 - fm), na = ra + fa * fm;
+    const fm = foldM.l[i] + foldM.r[i], Oa = rest[i * 4 + 3] / 255;
+    if (fm <= 0 && (lx > OPEN_EDGE || lx < 520 || y < 338 || y > 760 || Oa < .99)) continue;
+    if (fm < 1 && Oa < .99) {                             // a see-through edge the folded wing half covers: as drawn,
+      body[i * 4 + 3] = Math.round(255 * Oa * (1 - fm) / (1 - Oa * fm));   // so that with the wing over it, it adds up to it
+      continue;
+    }
+    const out = flankEdge(y);
+    // the chest carried outward
+    const d = OPEN_EDGE - lx, xl = OPEN_EDGE + .35 * d, xs = left ? xl : 2 * MID - xl;
+    const ys = Math.min(835, y + (xl - lx));               // the chevrons' arms slope at about 1:1
+    let [r, g, b, a] = sample(rest, W, H, xs, ys);
+    const shade = (1 - .24 * sstep(20, 126, d)) * (.72 + .28 * sstep(0, 9, lx - out));
+    if (a > 0) { r = r / a * shade; g = g / a * shade; b = b / a * shade; }
+    const o = i * 4, O = [rest[o], rest[o + 1], rest[o + 2]];
+    // the open look: under the wing (by its mask) the flank; beside it, in its shadow, the lit chest
+    const fa = a * Math.min(1, Math.max(0, (lx - out) / 1.6 + .5)) * sstep(346, 360, y);
+    const v = fm < 1 ? sstep(faceLine(lx) + 2, faceLine(lx) + 14, y) * (1 - sstep(705, 735, y)) * sstep(0, 8, d) : 0;
+    const na = fa * fm + Oa * (1 - fm);
     if (na < 1 / 255) { body[o + 3] = 0; continue; }
-    const fill = a > 0 ? fa * fm / a : 0;
-    body[o] = Math.round((rest[o] * ra + r * shade * fill) / na);
-    body[o + 1] = Math.round((rest[o + 1] * ra + g * shade * fill) / na);
-    body[o + 2] = Math.round((rest[o + 2] * ra + b * shade * fill) / na);
-    body[o + 3] = Math.round(na * 255);
+    const P = [r, g, b].map((c, k) => (c * fa * fm + (O[k] + (c - O[k]) * v) * Oa * (1 - fm)) / na);
+    if (fm >= 1) {
+      for (let k = 0; k < 3; k++) body[o + k] = Math.round(P[k]);
+      body[o + 3] = Math.round(na * 255);
+      continue;
+    }
+    // where any of the perched owl shows past the folded wing, the body under the shadow layer must
+    // give it back exactly: never darker than drawn, and the shadow B * (1 - s) + C * s == O
+    const B = P.map((c, k) => Math.max(O[k], c));
+    let s = 0; for (let k = 0; k < 3; k++) if (B[k] > 0) s = Math.max(s, 1 - O[k] / B[k]);
+    for (let k = 0; k < 3; k++) {
+      body[o + k] = Math.round(B[k]);
+      gap[o + k] = s > 0 ? Math.round(Math.max(0, O[k] - B[k] * (1 - s)) / s) : 0;
+    }
+    body[o + 3] = 255; gap[o + 3] = Math.round(s * 255);
   }
-  return body;
+  return { body, gap };
 }
 // each foot's toes and talons, each talon on its own so the gaps between them stay open
 const FOOT = [[523, 868], [560, 852], [588, 838], [616, 852], [645, 870], [646, 900], [646, 930], [630, 932], [618, 915], [618, 900], [604, 900], [604, 935], [596, 962], [578, 962], [570, 935], [570, 900], [556, 900], [556, 935], [546, 948], [530, 946], [522, 920], [522, 900]];
@@ -154,7 +178,24 @@ async function perched() {
   // the folded wings, each its own layer that lifts off the body and opens; and the body under them
   const foldM = { l: await polyMask(W, H, [FOLD], .8), r: await polyMask(W, H, [mirror(FOLD)], .8) };
   for (const s of ['l', 'r']) await save(rest, W, FOLD_BOX[s], 'owl-fold-' + s, { mask: foldM[s], q: 92 });
-  await save(wingless(rest, W, H, foldM), W, REST_BOX, 'owl-body', { q: 92 });
+  const { body, gap } = wingless(rest, W, H, foldM);
+  // check: body, its shadow and the folded wings, laid over each other, give back the perched owl
+  let worst = 0; const off = {};
+  for (let i = 0; i < W * H; i++) {
+    const o = i * 4, fa = rest[o + 3] / 255 * (foldM.l[i] + foldM.r[i]), ga = gap[o + 3] / 255;
+    let A = body[o + 3] / 255; const c = [0, 1, 2].map(k => body[o + k] * A);
+    for (let k = 0; k < 3; k++) c[k] = gap[o + k] * ga + c[k] * (1 - ga); A = ga + A * (1 - ga);
+    for (let k = 0; k < 3; k++) c[k] = rest[o + k] * fa + c[k] * (1 - fa); A = fa + A * (1 - fa);
+    let e = Math.abs(A - rest[o + 3] / 255) * 255;
+    for (let k = 0; k < 3; k++) e = Math.max(e, Math.abs(c[k] - rest[o + k] * rest[o + 3] / 255));
+    worst = Math.max(worst, e);
+    if (e > 8) { const b = `${Math.floor(i % W / 25) * 25},${Math.floor(i / W / 25) * 25}`; off[b] = (off[b] || 0) + 1; }
+  }
+  const bad = Object.entries(off).sort((a, b) => b[1] - a[1]);
+  console.log('perched owl rebuilt from its layers, worst difference:', worst.toFixed(1), '/ 255;',
+    bad.length ? 'off by more than 8 at (x,y: px) ' + bad.slice(0, 8).map(e => e.join(': ')).join('  ') : 'none off by more than 8');
+  await save(body, W, REST_BOX, 'owl-body', { q: 92 });
+  await save(gap, W, REST_BOX, 'owl-body-gap', { lossless: true });
 
   // the talons layer, in front of the branch
   const plain = cutout(org, W, H, { close: 6, t0: 6, t1: 34, minArea: 30 });
