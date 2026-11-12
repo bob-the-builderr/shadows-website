@@ -70,6 +70,9 @@ async function save(rgba, W, [x0, y0, w, h], name, { mask, q = 92, phone = .55, 
 // the head layer's outline: ear tips down to the point of the face (nothing of the body)
 const HEAD = [[400, 92], [950, 92], [950, 236], [905, 236], [849, 343], [833, 350], [673, 460], [513, 350], [497, 343], [441, 236], [400, 236]];
 const HEAD_BOX = [400, 92, 550, 370], REST_BOX = [330, 80, 690, 990], TALONS_BOX = [515, 832, 320, 140];
+// behind the head: the neck, the lower middle of the head's outline (in from the cheeks, down to the
+// point of the face), in shadow
+const NECK = [[472, 252], [874, 252], [843, 340], [833, 350], [673, 460], [513, 350], [503, 340]], NECK_RGB = [20, 3, 5];
 // the owl's middle: the right side is the left one mirrored about it
 const MID = 673, mirror = p => p.map(([x, y]) => [2 * MID - x, y]);
 // the left folded wing, from under the head's edge down to its longest feathers; the inner edge runs
@@ -162,18 +165,20 @@ async function perched() {
   solidify(headA, W, H, 14, () => 1);
   await save(headA, W, HEAD_BOX, 'owl-head', { mask: headPoly, phone: 0 });
 
-  // under the head, in the body, a dimmed blur: when the head layer turns, that is what shows
-  const sil = new Uint8Array(W * H);
-  for (let i = 0; i < sil.length; i++) sil[i] = headPoly[i] > .5 && headA[i * 4 + 3] > 128 ? 1 : 0;
-  const wide = dilate(sil, W, H, 6);
-  const blurred = await sharp(org, { raw: { width: W, height: H, channels: 3 } }).blur(Math.max(2, W / 260)).raw().toBuffer();
-  const shielded = Buffer.from(org);
-  for (let i = 0; i < W * H; i++) { const m = wide[i] ? headPoly[i] : 0; if (m <= 0) continue; for (let c = 0; c < 3; c++) shielded[i * 3 + c] = Math.round(org[i * 3 + c] * (1 - m) + blurred[i * 3 + c] * .28 * m); }
-
   // the rest body: solid below the head, but not from the toes down (the branch shows between them)
-  const rest = cutout(shielded, W, H, { close: 8, t0: 6, t1: 34, minArea: 60 });
+  const rest = cutout(org, W, H, { close: 8, t0: 6, t1: 34, minArea: 60 });
   solidify(rest, W, H, 22, (x, y) => sstep(320, 360, y) * (1 - sstep(838, 854, y)));
-  for (let i = 0; i < W * H; i++) if (sil[i]) rest[i * 4 + 3] = 255;
+
+  // under the head, in the body: only the neck, low down and in shadow. When the head layer turns,
+  // what shows past its edge is that, or nothing (the night behind the ear tufts and the crown),
+  // never a copy of the head: no traces of its ears or cheeks
+  const neck = await polyMask(W, H, [NECK], 6);
+  for (let i = 0; i < W * H; i++) {
+    const m = headPoly[i]; if (m <= 0) continue;
+    const o = i * 4, Oa = rest[o + 3] / 255 * (1 - m), Na = neck[i] * m, A = Oa + Na;
+    for (let c = 0; c < 3; c++) rest[o + c] = A > 0 ? Math.round((rest[o + c] * Oa + NECK_RGB[c] * Na) / A) : 0;
+    rest[o + 3] = Math.round(A * 255);
+  }
 
   // the folded wings, each its own layer that lifts off the body and opens; and the body under them
   const foldM = { l: await polyMask(W, H, [FOLD], .8), r: await polyMask(W, H, [mirror(FOLD)], .8) };
