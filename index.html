@@ -1154,8 +1154,8 @@ function layout() {
   const w = innerWidth, h = innerHeight, header = 64;
   // where the branch runs: lower on a tall screen, higher on a short one (a laptop, a phone on its side),
   // so the owl gives the text the room it needs; and the gap under the tabs narrows with it
-  const share = w < 640 ? .43 - Math.max(0, 780 - h) / 1400 : .48 - Math.max(0, 900 - h) / 2400;
-  let perch = Math.round(h * share);
+  // on a phone the owl is about a quarter of the screen's height (ear tips to talons), no more
+  let perch = Math.round(w < 640 ? header + 30 + h * .23 : h * (.48 - Math.max(0, 900 - h) / 2400));
   perch = Math.max(perch, header + (h < 600 ? 110 : 150));
   docEl.style.setProperty('--perch', perch + 'px');
   // the content starts a measured distance under the tabs (their own height, then 14–26px of air)
