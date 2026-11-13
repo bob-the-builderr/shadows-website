@@ -917,7 +917,8 @@ const tree = (() => {
     // silhouette with a soft shadow, then the round shading in thin bands
     g.save(); g.shadowColor = 'rgba(0,0,0,.65)'; g.shadowBlur = 8; g.shadowOffsetY = 3;
     band(-1, 1); g.fillStyle = '#0c0605'; g.fill(); g.restore();
-    const B = 18, fireAmt = smoothstep(2, 9, rad[Math.floor(n / 3)]);   // thin twigs catch little of the fire's light
+    // thin twigs catch little of the fire's light (o.fire: as much as the wood it grows from)
+    const B = 18, fireAmt = o.fire != null ? o.fire : smoothstep(2, 9, rad[Math.floor(n / 3)]);
     for (let b = 0; b < B; b++) { const k0 = -1 + 2 * b / B, k1 = -1 + 2 * (b + 1) / B; band(k0, k1 + .01); g.fillStyle = shade((k0 + k1) / 2, fireAmt); g.fill(); }
     // the tip: a rounded end
     const e = n - 1; g.beginPath(); g.arc(pts[e][0], pts[e][1], rad[e], 0, 7); g.fillStyle = shade(.2, fireAmt); g.fill();
@@ -979,46 +980,66 @@ const tree = (() => {
   // per px of the client's image (so the branch is always as thick as the talons can hold)
   function build(perch, W, H, feet, opx) {
     const rand = seq(11), cx = W / 2, rF = 30 * opx, Z = feet * 1.25;
-    // the limb comes in from the trunk off the left edge and ends under the owl, behind its tail: the owl
-    // sits where it forks. Its centre line rises a little toward the trunk, level and flat under the
-    // talons, with a slow natural waver; thick at the trunk, tapering toward the fork.
-    const xEnd = cx + Z * .25;
+    // the limb comes in from the trunk off the left edge, runs under both feet and, just past the right
+    // one, forks: the owl sits where it divides. Its centre line rises a little toward the trunk, level
+    // and flat under the talons, with a slow natural waver; thick at the trunk, narrowing into the fork.
+    const xEnd = cx + Z + 4 * Math.min(1, W / 900 + .3);
     const yAt = x => {
       const d = x - cx, a = Math.max(0, Math.abs(d) - Z), w = smoothstep(0, 90, a);
       return perch + w * (-.045 * a + 4 * Math.sin(d * .011 + 1.3) + 2.2 * Math.sin(d * .029 + .4)) * Math.min(1, W / 900 + .3);
     };
     const rAt = x => rF * (1.42 - .5 * clamp((x + 70) / (xEnd + 70))) * (1 + .05 * Math.sin(x * .021));
     const main = []; for (let x = -70; x <= xEnd; x += 3) main.push([x, yAt(x)]);
-    const E = [xEnd, yAt(xEnd)], rE = rAt(xEnd);
+    const E = [xEnd, yAt(xEnd)], rE = rAt(xEnd), limbFire = smoothstep(2, 9, rAt(-70 + (xEnd + 70) / 3));
     const tg = fit(twigC, W, H), lg = fit(limbC, W, H);
     let pl = '', bh = '';
     buds = [];
-    // the fork: from the limb's end every offshoot sets out, the ones to the right first along the limb's
-    // line (the right foot grips them there), the others down behind the tail; each spreads and bends
-    // down to its tab, thick where they part and thin at the tab
+    /* the fork. Past the right foot the limb divides. It goes on itself, in one piece, along its own
+       line, thinning, and divides again toward the tabs on the right; from its underside a second stem
+       drops down and back behind the tail and divides toward the rest. Each tab's offshoot leaves its
+       stem where it divides and bends down to the tab, thinning to a twig. What passes behind the owl
+       is drawn on the layer behind it; the limb, its own continuation and the offshoots out on the
+       right are one layer in front, drawn in one stroke, so nothing shows a seam. */
+    const tabs = TABS.map(b => { const r = b.getBoundingClientRect(); return [r.left + r.width / 2, r.top + 1]; });
+    const drop = tabs[0][1] - E[1];
+    const rightOnes = tabs.map((t, i) => i).filter(i => tabs[i][0] > E[0] + Z * .4);
+    const leftOnes = tabs.map((t, i) => i).filter(i => !rightOnes.includes(i));
+    const limbPts = main.slice(), limbRad = main.map(p => rAt(p[0])), stems = [];
+    if (rightOnes.length) {                                        // the limb itself, on and gently down
+      const xs = rightOnes.map(i => tabs[i][0]), S = [E[0] + (Math.min(...xs) - E[0]) * .5, E[1] + drop * .3], r1 = rE * .5;
+      const pts = bezPts(E, [E[0] + (S[0] - E[0]) * .45, E[1] + rE * .1], [S[0] - (S[0] - E[0]) * .25, S[1] - drop * .1], S, 3);
+      pts.slice(1).forEach((p, j, arr) => { limbPts.push(p); limbRad.push(rE + (r1 - rE) * Math.pow((j + 1) / arr.length, .8)); });
+      stems.push({ pts, S, r1, ids: rightOnes, g: lg });
+    }
+    if (leftOnes.length) {                                         // from the limb's underside, back behind the tail
+      const xs = leftOnes.map(i => tabs[i][0]), S = [cx + (Math.min(...xs) - cx) * .22, E[1] + drop * .5], r1 = rE * .46;
+      // it leaves the underside just past the right foot, where it shows, drops, and turns back behind the tail
+      const pts = bezPts([E[0] + rE * .3, E[1] + rE * .3], [E[0] + rE * .25, E[1] + rE * 1.5 + drop * .14], [S[0] + (E[0] - S[0]) * .5, S[1] - drop * .12], S, 2.5);
+      tube(tg, pts, pts.map((_, j) => { const t = j / (pts.length - 1); return rE * .72 + (r1 - rE * .72) * Math.pow(t, .8); }), rand, { bark: 1.1, crackEvery: 90, fire: limbFire });
+      stems.push({ pts, S, r1, ids: leftOnes, g: tg });
+    }
+    const front = [];                                              // offshoots in front, drawn after the limb
     TABS.forEach((b, i) => {
-      const r = b.getBoundingClientRect(), tx = r.left + r.width / 2, ty = r.top + 1;
-      const dx = tx - E[0], side = dx < 0 ? -1 : 1, far = Math.min(1, Math.abs(dx) / 240), drop = ty - E[1];
-      const a = [E[0] - rE * .5, E[1] + rE * .08];
-      const c1 = side > 0 ? [E[0] + Math.max(Z * 1.35, dx * .5), E[1] + rE * .45 + drop * .08]
-                          : [E[0] + dx * .3, E[1] + rE * .6 + drop * .22];
-      const c2 = [tx - dx * .14, ty - drop * .48], d = [tx, ty - 3];
-      const pts = bezPts(a, c1, c2, d, 2.5);
-      const r0 = rE * (.5 + .16 * far);
+      const [tx, ty] = tabs[i], st = stems.find(s => s.ids.includes(i)), S = st.S;
+      const dx = tx - S[0], side = dx < 0 ? -1 : 1, far = Math.min(1, Math.abs(dx) / 200), dy = ty - S[1];
+      const pts = bezPts(S, [S[0] + dx * .32, S[1] + dy * .18], [tx - dx * .12, ty - dy * .5], [tx, ty - 3], 2.5);
+      const r0 = st.r1 * (.82 + .12 * far);
       const rad = pts.map((p, j) => { const t = j / (pts.length - 1); return Math.max(1.4, r0 * Math.pow(1 - t, .85) + 1.5 * t); });
-      tube(tg, pts, rad, rand, { bark: 1, crackEvery: 150 });
-      // a short spur off the longer offshoots
-      if (far > .45) {
-        const j = Math.floor(pts.length * (.45 + rand() * .2)), p = pts[j];
-        const ang = Math.atan2(pts[j + 1][1] - p[1], pts[j + 1][0] - p[0]) + side * (rand() < .5 ? .9 : -.7) * (.8 + rand() * .4);
-        const L = 8 + rand() * 11, e = [p[0] + Math.cos(ang) * L, p[1] + Math.sin(ang) * L];
-        const sp = bezPts(p, [p[0] + Math.cos(ang) * L * .4, p[1] + Math.sin(ang) * L * .4], [e[0], e[1] - 2], e, 2);
-        tube(tg, sp, sp.map((_, k) => Math.max(.7, rad[j] * .5 * (1 - k / sp.length))), rand, { bark: .4, crackEvery: 1e9 });
-      }
+      const draw = g => {
+        tube(g, pts, rad, rand, { bark: 1, crackEvery: 150, fire: limbFire * (1 - .6 * far) });
+        if (far > .45) {                                           // a short spur off the longer offshoots
+          const j = Math.floor(pts.length * (.45 + rand() * .2)), p = pts[j];
+          const ang = Math.atan2(pts[j + 1][1] - p[1], pts[j + 1][0] - p[0]) + side * (rand() < .5 ? .9 : -.7) * (.8 + rand() * .4);
+          const L = 8 + rand() * 11, e = [p[0] + Math.cos(ang) * L, p[1] + Math.sin(ang) * L];
+          const sp = bezPts(p, [p[0] + Math.cos(ang) * L * .4, p[1] + Math.sin(ang) * L * .4], [e[0], e[1] - 2], e, 2);
+          tube(g, sp, sp.map((_, k) => Math.max(.7, rad[j] * .5 * (1 - k / sp.length))), rand, { bark: .4, crackEvery: 1e9 });
+        }
+      };
+      if (st.g === lg) front.push(draw); else draw(tg);
       bh += `<i style="left:${tx.toFixed(1)}px;top:${(ty - 3).toFixed(1)}px"></i>`;
-      // the light's way: from the fork down the offshoot. Its glow is a wide, faint stroke under the line,
-      // not a blur filter: a filter is redrawn every frame while the light runs (a fifth of the frames)
-      const wp = P(pts.filter((_, k) => k % 2 === 0));
+      // the light's way: from the fork along the stem and down the offshoot. Its glow is a wide, faint stroke
+      // under the line, not a blur filter: a filter is redrawn every frame while the light runs
+      const wp = P([...st.pts, ...pts].filter((_, k) => k % 2 === 0));
       pl += `<g><polyline class="halo" points="${wp}"/><polyline class="halo2" points="${wp}"/><polyline points="${wp}"/></g>`;
     });
     // a few bare twigs of its own, up from the limb, away from the talons
@@ -1029,8 +1050,9 @@ const tree = (() => {
       const sp = bezPts([x0, y0 + 4], [x0 + Math.sin(lean) * L * .2, y0 - L * .45], [e[0] - Math.sin(lean) * 6, e[1] + 6], e, 2.5);
       tube(lg, sp, sp.map((_, k) => Math.max(.9, rAt(x0) * .32 * (1 - k / sp.length) + .8)), rand, { bark: .6, crackEvery: 1e9 });
     }
-    tube(lg, main, main.map(p => rAt(p[0])), rand, {
-      knots: [{ at: .12, k: .1 }, { at: .3, k: -.3 }, { at: .7, k: .25 }, { at: .86, k: -.2 }], bark: 1.3, crackEvery: 55 });
+    tube(lg, limbPts, limbRad, rand, {
+      knots: [{ at: .12, k: .1 }, { at: .3, k: -.3 }, { at: .62, k: .25 }, { at: .78, k: -.2 }], bark: 1.3, crackEvery: 55 });
+    for (const draw of front) draw(lg);                            // the offshoots out on the right, from its end
     // where it burns: a few spots along the limb, never near the talons; the wood glows around each,
     // brightest on top where the flames sit, with hot chips of ember in it
     const spots = [];
