@@ -890,6 +890,39 @@ const tree = (() => {
     if (out[out.length - 1] !== raw[raw.length - 1]) out.push(raw[raw.length - 1]);
     return out;
   };
+  /* how a branch grows: in short runs, nearly straight, turning a little at each node, where side twigs
+     come off. From a, heading `ang`, it grows in n runs to b: early runs keep to the way it was going,
+     later ones turn toward b, every one with a little chance in its angle and length. The corners are
+     cut a little (they stay elbows, not curves) and the line is laid out every `step` px.
+     Returns the points and the nodes (the elbows, as indexes into the points). */
+  const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
+  function grow(a, ang, b, rand, n, jit, step = 2.5) {
+    const nodes = [a]; let p = a, h = ang;
+    for (let k = 1; k < n; k++) {
+      const dx = b[0] - p[0], dy = b[1] - p[1], dist = Math.hypot(dx, dy);
+      h += angDiff(Math.atan2(dy, dx), h) * (.3 + .55 * k / n) + (rand() - .5) * jit;
+      const len = dist / (n - k + 1) * (.8 + rand() * .35);
+      p = [p[0] + Math.cos(h) * len, p[1] + Math.sin(h) * len];
+      nodes.push(p);
+    }
+    nodes.push(b);
+    const cut = [nodes[0]];                                       // corners cut by a fifth: elbows, rounded
+    for (let k = 1; k < nodes.length - 1; k++) {
+      const A = nodes[k - 1], B = nodes[k], C = nodes[k + 1];
+      cut.push([B[0] + (A[0] - B[0]) * .2, B[1] + (A[1] - B[1]) * .2], [B[0] + (C[0] - B[0]) * .2, B[1] + (C[1] - B[1]) * .2]);
+    }
+    cut.push(nodes[nodes.length - 1]);
+    const pts = [cut[0]], at = [0]; let acc = 0;
+    for (let k = 1; k < cut.length; k++) {
+      const A = cut[k - 1], B = cut[k], L = Math.hypot(B[0] - A[0], B[1] - A[1]);
+      for (let s = step - acc; s < L; s += step) pts.push([A[0] + (B[0] - A[0]) * s / L, A[1] + (B[1] - A[1]) * s / L]);
+      acc = (acc + L) % step;
+      if (k % 2 === 1 && k < cut.length - 1) at.push(pts.length - 1);   // the elbow sits between the two cuts
+    }
+    pts.push(b);
+    const e = pts.length - 1, endAng = Math.atan2(pts[e][1] - pts[Math.max(0, e - 4)][1], pts[e][0] - pts[Math.max(0, e - 4)][0]);
+    return { pts, nodes: at.slice(1), endAng };
+  }
   // the colour of charred wood across the limb: k = -1 underside .. +1 top. Lit from above, and
   // from below by the fire, red
   const shade = (k, fireAmt = 1) => {
@@ -994,52 +1027,55 @@ const tree = (() => {
     const tg = fit(twigC, W, H), lg = fit(limbC, W, H);
     let pl = '', bh = '';
     buds = [];
-    /* the fork. Past the right foot the limb divides. It goes on itself, in one piece, along its own
-       line, thinning, and divides again toward the tabs on the right; from its underside a second stem
-       drops down and back behind the tail and divides toward the rest. Each tab's offshoot leaves its
-       stem where it divides and bends down to the tab, thinning to a twig. What passes behind the owl
-       is drawn on the layer behind it; the limb, its own continuation and the offshoots out on the
-       right are one layer in front, drawn in one stroke, so nothing shows a seam. */
+    /* the offshoots, grown as a branch's own. They come out of the limb's last stretch, before the owl
+       and under it, and all grow the way the limb grows, on away from the trunk: each leaves at a gentle
+       angle, forward and a little down, runs in short, nearly straight runs with elbows, and droops under
+       its own weight to hang its tip just over its tab. The limb's own end, past the right foot, droops
+       the same way to the last tab. Side twigs reach out and up from the elbows. A branch drawn before
+       the limb comes out from inside it; what would pass behind the owl is drawn on the layer behind. */
+    const sc = Math.min(1, W / 900 + .35);
     const tabs = TABS.map(b => { const r = b.getBoundingClientRect(); return [r.left + r.width / 2, r.top + 1]; });
-    const drop = tabs[0][1] - E[1];
-    const rightOnes = tabs.map((t, i) => i).filter(i => tabs[i][0] > E[0] + Z * .4);
-    const leftOnes = tabs.map((t, i) => i).filter(i => !rightOnes.includes(i));
-    const limbPts = main.slice(), limbRad = main.map(p => rAt(p[0])), stems = [];
-    if (rightOnes.length) {                                        // the limb itself, on and gently down
-      const xs = rightOnes.map(i => tabs[i][0]), S = [E[0] + (Math.min(...xs) - E[0]) * .5, E[1] + drop * .3], r1 = rE * .5;
-      const pts = bezPts(E, [E[0] + (S[0] - E[0]) * .45, E[1] + rE * .1], [S[0] - (S[0] - E[0]) * .25, S[1] - drop * .1], S, 3);
-      pts.slice(1).forEach((p, j, arr) => { limbPts.push(p); limbRad.push(rE + (r1 - rE) * Math.pow((j + 1) / arr.length, .8)); });
-      stems.push({ pts, S, r1, ids: rightOnes, g: lg });
+    const last = tabs.length - 1, ways = [];
+    const limbPts = main.slice(), limbRad = main.map(p => rAt(p[0]));
+    // side twigs from a branch's elbows, out and up, each a little run of its own (never back into the limb)
+    function sideTwigs(g, br, rad, fire) {
+      for (const j of br.nodes) {
+        if (rand() > .6 || rad[j] < 1.7) continue;
+        const p = br.pts[j], q = br.pts[Math.min(br.pts.length - 1, j + 3)], h = Math.atan2(q[1] - p[1], q[0] - p[0]);
+        const a = h - (.55 + rand() * .4);                          // to the upper side of a branch growing forward
+        const L = (6 + rand() * 10) * sc, e = [p[0] + Math.cos(a) * L, p[1] + Math.sin(a) * L];
+        if (e[1] < perch + rF * .9) continue;                        // it would reach into the limb
+        const tw = grow(p, a, e, rand, 2, .5, 2);
+        tube(g, tw.pts, tw.pts.map((_, k) => Math.max(.6, rad[j] * .5 * (1 - k / tw.pts.length))), rand, { bark: .4, crackEvery: 1e9, fire: fire * .5 });
+      }
     }
-    if (leftOnes.length) {                                         // from the limb's underside, back behind the tail
-      const xs = leftOnes.map(i => tabs[i][0]), S = [cx + (Math.min(...xs) - cx) * .22, E[1] + drop * .5], r1 = rE * .46;
-      // it leaves the underside just past the right foot, where it shows, drops, and turns back behind the tail
-      const pts = bezPts([E[0] + rE * .3, E[1] + rE * .3], [E[0] + rE * .25, E[1] + rE * 1.5 + drop * .14], [S[0] + (E[0] - S[0]) * .5, S[1] - drop * .12], S, 2.5);
-      tube(tg, pts, pts.map((_, j) => { const t = j / (pts.length - 1); return rE * .72 + (r1 - rE * .72) * Math.pow(t, .8); }), rand, { bark: 1.1, crackEvery: 90, fire: limbFire });
-      stems.push({ pts, S, r1, ids: leftOnes, g: tg });
+    // the limb's own end: past the right foot it bends down and thins to the last tab
+    const tip = grow(E, .06, [tabs[last][0], tabs[last][1] - 3], rand, 4, .16, 3);
+    tip.pts.slice(1).forEach((p, j, arr) => { const t = (j + 1) / arr.length; limbPts.push(p); limbRad.push(Math.max(1.4, rE * Math.pow(1 - t, .75) + 1.4 * t)); });
+    ways[last] = tip.pts;
+    // the others, each from the limb a little behind its tab (forward growth), the nearest first
+    const gap = last > 0 ? (tabs[last][0] - tabs[0][0]) / last : 80;
+    for (let i = 0; i < last; i++) {
+      const [tx, ty] = tabs[i];
+      const ox = Math.min(tx - gap * (1.1 + rand() * .35), E[0] - rE * .4), o = [ox, yAt(ox) + rAt(ox) * .3];
+      const br = grow(o, .14, [tx, ty - 3], rand, 4, .38);        // out nearly level, then down under its weight
+      const r0 = rAt(ox) * .5;
+      const rad = br.pts.map((_, k) => { const t = k / (br.pts.length - 1); return Math.max(1.3, r0 * Math.pow(1 - t, .9) * (1 + .14 * Math.max(0, 1 - t * 8)) + 1.3 * t); });
+      // behind the owl if it passes under its body and tail, in front (under the limb) if it stays clear
+      const behind = br.pts.some(p => Math.abs(p[0] - cx) < Z * .75 && p[1] > perch);
+      const g = behind ? tg : lg, fire = limbFire * (behind ? .5 : .8);
+      tube(g, br.pts, rad, rand, { bark: 1, crackEvery: 130, fire });
+      sideTwigs(g, br, rad, fire);
+      ways[i] = br.pts;
     }
-    const front = [];                                              // offshoots in front, drawn after the limb
+    sideTwigs(lg, tip, tip.pts.map((_, k) => { const t = k / (tip.pts.length - 1); return rE * Math.pow(1 - t, .75); }), limbFire);
+    const front = [];
     TABS.forEach((b, i) => {
-      const [tx, ty] = tabs[i], st = stems.find(s => s.ids.includes(i)), S = st.S;
-      const dx = tx - S[0], side = dx < 0 ? -1 : 1, far = Math.min(1, Math.abs(dx) / 200), dy = ty - S[1];
-      const pts = bezPts(S, [S[0] + dx * .32, S[1] + dy * .18], [tx - dx * .12, ty - dy * .5], [tx, ty - 3], 2.5);
-      const r0 = st.r1 * (.82 + .12 * far);
-      const rad = pts.map((p, j) => { const t = j / (pts.length - 1); return Math.max(1.4, r0 * Math.pow(1 - t, .85) + 1.5 * t); });
-      const draw = g => {
-        tube(g, pts, rad, rand, { bark: 1, crackEvery: 150, fire: limbFire * (1 - .6 * far) });
-        if (far > .45) {                                           // a short spur off the longer offshoots
-          const j = Math.floor(pts.length * (.45 + rand() * .2)), p = pts[j];
-          const ang = Math.atan2(pts[j + 1][1] - p[1], pts[j + 1][0] - p[0]) + side * (rand() < .5 ? .9 : -.7) * (.8 + rand() * .4);
-          const L = 8 + rand() * 11, e = [p[0] + Math.cos(ang) * L, p[1] + Math.sin(ang) * L];
-          const sp = bezPts(p, [p[0] + Math.cos(ang) * L * .4, p[1] + Math.sin(ang) * L * .4], [e[0], e[1] - 2], e, 2);
-          tube(g, sp, sp.map((_, k) => Math.max(.7, rad[j] * .5 * (1 - k / sp.length))), rand, { bark: .4, crackEvery: 1e9 });
-        }
-      };
-      if (st.g === lg) front.push(draw); else draw(tg);
+      const [tx, ty] = tabs[i];
       bh += `<i style="left:${tx.toFixed(1)}px;top:${(ty - 3).toFixed(1)}px"></i>`;
-      // the light's way: from the fork along the stem and down the offshoot. Its glow is a wide, faint stroke
-      // under the line, not a blur filter: a filter is redrawn every frame while the light runs
-      const wp = P([...st.pts, ...pts].filter((_, k) => k % 2 === 0));
+      // the light's way: from the fork along the branches to the tab. Its glow is a wide, faint stroke under
+      // the line, not a blur filter: a filter is redrawn every frame while the light runs
+      const wp = P((ways[i] || []).filter((_, k) => k % 2 === 0));
       pl += `<g><polyline class="halo" points="${wp}"/><polyline class="halo2" points="${wp}"/><polyline points="${wp}"/></g>`;
     });
     // a few bare twigs of its own, up from the limb, away from the talons
