@@ -86,21 +86,25 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header);z-index:6;displa
    owl's body and tail; the owl's toes and talons are a layer in front of it, gripping it. Its
    offshoots grow down to the tabs, each ending in an ember that lights up for the open tab. */
 .limb,.twigs,.fire{position:fixed;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;display:block;will-change:transform}
+/* the offshoots fork from the limb's end under the owl: they pass behind it (its tail hides where they part) */
+.twigs{z-index:2}
 .fire{inset:auto 0 auto 0}
 .talons{position:fixed;left:0;top:0;z-index:5;pointer-events:none;transform-origin:0 0;will-change:transform}
 .buds{position:fixed;inset:0;z-index:5;pointer-events:none}
 .buds i{position:absolute;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;
   background:radial-gradient(circle,#7a2a18 0 30%,#2a0705 70%);box-shadow:0 0 4px rgba(225,24,39,.35);transition:background .4s,box-shadow .4s,transform .4s}
+.buds i.peek{background:radial-gradient(circle,#ffc79a 0 22%,#c8401c 60%,#4a0b06 80%);box-shadow:0 0 7px 2px rgba(255,80,40,.45)}
 .buds i.on{background:radial-gradient(circle,#fff1dc 0 18%,#ff9a5a 36%,#e11827 70%);box-shadow:0 0 10px 3px rgba(255,80,40,.75),0 0 24px 6px rgba(225,24,39,.35);transform:scale(1.25)}
-.tree-fx{position:fixed;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;overflow:visible}
+.tree-fx{position:fixed;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible}
 .tree-fx polyline{fill:none;stroke:#ffb08a;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;opacity:0}
 .tree-fx .halo{stroke:#ff5a2e;stroke-width:10;stroke-opacity:.14}
 .tree-fx .halo2{stroke:#ff8a5a;stroke-width:5.5;stroke-opacity:.32}
 
 .tabs{position:fixed;left:0;right:0;top:calc(var(--perch) + var(--tail, 14px));z-index:2;display:flex;justify-content:center;gap:clamp(16px,3.4vw,40px);padding:0 12px;transition:opacity .6s}
-.tabs button{all:unset;cursor:pointer;position:relative;padding:10px 2px 8px;font:500 14px/1 var(--text);letter-spacing:.01em;color:var(--ash);transition:color .3s}
+/* the tabs: the open one bright and a little heavier, the others quieter until the pointer is on them */
+.tabs button{all:unset;cursor:pointer;position:relative;padding:12px 4px 10px;font:500 14px/1 var(--text);letter-spacing:.01em;color:#8d888e;transition:color .3s}
 .tabs button:hover{color:var(--bone)}
-.tabs button[aria-selected="true"]{color:var(--bone)}
+.tabs button[aria-selected="true"]{color:var(--bone);font-weight:600}
 .tabs button:focus-visible{outline:1px solid var(--bone);outline-offset:4px}
 /* opening: the limb grows in from the left; the offshoots, their embers and the tabs follow */
 .limb{transition:clip-path 1.1s cubic-bezier(.2,.7,.2,1)}
@@ -145,6 +149,12 @@ h1,h2{font-family:var(--display);font-weight:800;font-stretch:125%;font-size:cla
 .w-result{font-size:15px;font-weight:700;color:var(--ruby);text-align:right;white-space:nowrap}
 
 .fine{margin-top:34px;font-size:13px;color:#615c62}
+/* the way on, at the end of a tab that has no buttons of its own */
+.next{margin-top:var(--gap-l);display:inline-flex;align-items:center;gap:10px;padding:10px 2px;font:600 15px/1 var(--text);color:var(--bone);text-decoration:none;border-bottom:1px solid var(--rule);transition:border-color .25s}
+.next span{color:var(--ruby);transition:transform .25s}
+.next:hover{border-color:var(--bone)}
+.next:hover span{transform:translateX(4px)}
+.next:focus-visible{outline:1px solid var(--bone);outline-offset:4px}
 
 /* glowing edge of the reveal as the wings sweep down */
 /* the reveal's edge glows by two faint, wide strokes under it, not a drop-shadow filter (redrawn every
@@ -166,8 +176,8 @@ body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-inde
   .services li{padding-right:10px}
 }
 @media (max-width:560px){
-  .tabs{gap:14px}
-  .tabs button{font-size:13px}
+  .tabs{gap:8px}
+  .tabs button{font-size:13px;padding:16px 4px 15px}          /* a finger-sized target: 44px tall */
   .wordmark img{height:28px}
   :root{--gap-l:26px}
   /* stacked, the buttons are one column of equal width */
@@ -229,6 +239,7 @@ body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-inde
         <li><h3>Ad campaigns</h3><p>Paid social and digital ads planned around one clear goal.</p></li>
         <li><h3>Brand identity</h3><p>Logos and visual systems built to stay unmistakable.</p></li>
       </ul>
+      <a class="next" href="#" data-go="2">See our work <span aria-hidden="true">→</span></a>
     </div>
   </section>
 
@@ -246,6 +257,7 @@ body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-inde
     <div class="inner">
       <h2>Make an impact. Stay unmistakable.</h2>
       <p class="lede">Bold, cinematic and confident work from one crew of directors, photographers, designers and media buyers. You work with the people behind the camera, not a chain of account managers.</p>
+      <a class="next" href="#" data-go="4">Start a project <span aria-hidden="true">→</span></a>
     </div>
   </section>
 
@@ -967,48 +979,50 @@ const tree = (() => {
   // per px of the client's image (so the branch is always as thick as the talons can hold)
   function build(perch, W, H, feet, opx) {
     const rand = seq(11), cx = W / 2, rF = 30 * opx, Z = feet * 1.25;
-    // centre line: thicker toward the trunk on the left, level and flat under the talons, rising a
-    // little toward the trunk and drooping a little at the thin end, with a slow natural waver
+    // the limb comes in from the trunk off the left edge and ends under the owl, behind its tail: the owl
+    // sits where it forks. Its centre line rises a little toward the trunk, level and flat under the
+    // talons, with a slow natural waver; thick at the trunk, tapering toward the fork.
+    const xEnd = cx + Z * .25;
     const yAt = x => {
       const d = x - cx, a = Math.max(0, Math.abs(d) - Z), w = smoothstep(0, 90, a);
-      const lean = d < 0 ? -.045 * a : -.012 * a + .00005 * a * a;
-      return perch + w * (lean + 4 * Math.sin(d * .011 + 1.3) + 2.2 * Math.sin(d * .029 + .4)) * Math.min(1, W / 900 + .3);
+      return perch + w * (-.045 * a + 4 * Math.sin(d * .011 + 1.3) + 2.2 * Math.sin(d * .029 + .4)) * Math.min(1, W / 900 + .3);
     };
-    const rAt = x => rF * (1.42 - .82 * clamp((x + 60) / (W + 120))) * (1 + .05 * Math.sin(x * .021));
-    const main = []; for (let x = -70; x <= W + 70; x += 3) main.push([x, yAt(x)]);
+    const rAt = x => rF * (1.42 - .5 * clamp((x + 70) / (xEnd + 70))) * (1 + .05 * Math.sin(x * .021));
+    const main = []; for (let x = -70; x <= xEnd; x += 3) main.push([x, yAt(x)]);
+    const E = [xEnd, yAt(xEnd)], rE = rAt(xEnd);
     const tg = fit(twigC, W, H), lg = fit(limbC, W, H);
     let pl = '', bh = '';
     buds = [];
+    // the fork: from the limb's end every offshoot sets out, the ones to the right first along the limb's
+    // line (the right foot grips them there), the others down behind the tail; each spreads and bends
+    // down to its tab, thick where they part and thin at the tab
     TABS.forEach((b, i) => {
       const r = b.getBoundingClientRect(), tx = r.left + r.width / 2, ty = r.top + 1;
-      const side = tx < cx ? -1 : 1;
-      let fxp = cx + (tx - cx) * .55;
-      if (Math.abs(fxp - cx) < Z + 18) fxp = cx + side * (Z + 18 + rand() * 10);
-      const fy = yAt(fxp), r0 = rAt(fxp) * .72;
-      // the offshoot leaves the limb's underside, sweeps out and down, and turns toward its tab
-      const a = [fxp, fy + rAt(fxp) * .35], c1 = [fxp + side * (rAt(fxp) * 1.6 + 10), fy + rAt(fxp) * 1.1 + 6];
-      const c2 = [tx + (fxp - tx) * .12 + side * 6 * (rand() - .5), ty - (ty - fy) * .5], d = [tx, ty - 3];
+      const dx = tx - E[0], side = dx < 0 ? -1 : 1, far = Math.min(1, Math.abs(dx) / 240), drop = ty - E[1];
+      const a = [E[0] - rE * .5, E[1] + rE * .08];
+      const c1 = side > 0 ? [E[0] + Math.max(Z * 1.35, dx * .5), E[1] + rE * .45 + drop * .08]
+                          : [E[0] + dx * .3, E[1] + rE * .6 + drop * .22];
+      const c2 = [tx - dx * .14, ty - drop * .48], d = [tx, ty - 3];
       const pts = bezPts(a, c1, c2, d, 2.5);
-      const rad = pts.map((p, j) => { const t = j / (pts.length - 1); return Math.max(1.4, r0 * Math.pow(1 - t, .8) + 1.5 * t) * (1 + .35 * Math.max(0, 1 - t * 6)); });
+      const r0 = rE * (.5 + .16 * far);
+      const rad = pts.map((p, j) => { const t = j / (pts.length - 1); return Math.max(1.4, r0 * Math.pow(1 - t, .85) + 1.5 * t); });
       tube(tg, pts, rad, rand, { bark: 1, crackEvery: 150 });
-      // a spur or two off the offshoot
-      for (let s = 0; s < 1 + (rand() < .55); s++) {
-        const j = Math.floor(pts.length * (.3 + rand() * .35)), p = pts[j];
+      // a short spur off the longer offshoots
+      if (far > .45) {
+        const j = Math.floor(pts.length * (.45 + rand() * .2)), p = pts[j];
         const ang = Math.atan2(pts[j + 1][1] - p[1], pts[j + 1][0] - p[0]) + side * (rand() < .5 ? .9 : -.7) * (.8 + rand() * .4);
-        const L = 9 + rand() * 14, e = [p[0] + Math.cos(ang) * L, p[1] + Math.sin(ang) * L];
+        const L = 8 + rand() * 11, e = [p[0] + Math.cos(ang) * L, p[1] + Math.sin(ang) * L];
         const sp = bezPts(p, [p[0] + Math.cos(ang) * L * .4, p[1] + Math.sin(ang) * L * .4], [e[0], e[1] - 2], e, 2);
         tube(tg, sp, sp.map((_, k) => Math.max(.7, rad[j] * .5 * (1 - k / sp.length))), rand, { bark: .4, crackEvery: 1e9 });
       }
       bh += `<i style="left:${tx.toFixed(1)}px;top:${(ty - 3).toFixed(1)}px"></i>`;
-      // the light's way: from the talons along the limb to the fork, then down the offshoot
-      const way = []; for (let x = cx; side < 0 ? x >= fxp : x <= fxp; x += side * 6) way.push([x, yAt(x)]);
-      // its glow is a wide, faint stroke under the line, not a blur filter: a filter is redrawn every frame
-      // while the light runs, and that cost the tab change a fifth of its frames
-      const wp = P([...way, ...pts.filter((_, k) => k % 2 === 0)]);
+      // the light's way: from the fork down the offshoot. Its glow is a wide, faint stroke under the line,
+      // not a blur filter: a filter is redrawn every frame while the light runs (a fifth of the frames)
+      const wp = P(pts.filter((_, k) => k % 2 === 0));
       pl += `<g><polyline class="halo" points="${wp}"/><polyline class="halo2" points="${wp}"/><polyline points="${wp}"/></g>`;
     });
-    // a few bare twigs of its own, up from the limb, away from the talons and the offshoots
-    for (const u of [-.42, -.27, .31, .44]) {
+    // a few bare twigs of its own, up from the limb, away from the talons
+    for (const u of [-.42, -.27]) {
       const x0 = cx + u * W; if (Math.abs(x0 - cx) < Z + 40 || x0 < 20 || x0 > W - 20) continue;
       const y0 = yAt(x0) - rAt(x0) * .5, L = (26 + rand() * 30) * Math.min(1, W / 900 + .35), lean = (rand() - .5) * 1.1 + (u < 0 ? -.35 : .35);
       const e = [x0 + Math.sin(lean) * L, y0 - Math.cos(lean) * L];
@@ -1020,7 +1034,7 @@ const tree = (() => {
     // where it burns: a few spots along the limb, never near the talons; the wood glows around each,
     // brightest on top where the flames sit, with hot chips of ember in it
     const spots = [];
-    for (const u of W < 640 ? [-.36, .3] : [-.36, .33]) {           // two fires, an accent, not a blaze
+    for (const u of W < 640 ? [-.34] : [-.38, -.2]) {               // fires on the limb (it is all left of the owl now)
       const x = cx + u * W; if (Math.abs(x - cx) < Z + 40 || x < 30 || x > W - 30) continue;
       spots.push({ x, y: yAt(x) - rAt(x) * .78, w: rAt(x) * 2.3, r: rAt(x), power: .7 + rand() * .3 });
     }
@@ -1043,6 +1057,8 @@ const tree = (() => {
     pulses = [...fx.children].map(g => [...g.children]);
     buds.forEach((b, k) => b.classList.toggle('on', k === on));
   }
+  // a tab under the pointer lights its ember a little: a preview of where it leads
+  function peek(i, yes) { if (buds[i]) buds[i].classList.toggle('peek', yes); }
   function setActive(i, glow) {
     on = i;
     buds.forEach((b, k) => b.classList.toggle('on', k === i));
@@ -1054,7 +1070,7 @@ const tree = (() => {
                  { strokeDasharray: `${seg} ${L + seg}`, strokeDashoffset: -L, opacity: 1 }],
                 { duration: 600 + L * .7, easing: 'cubic-bezier(.4,0,.2,1)' });
   }
-  return { build, setActive };
+  return { build, setActive, peek };
 })();
 
 /* layout ------------------------------------------------------------ */
@@ -1117,9 +1133,20 @@ function setTabUI(i) {
                               : `${coarse ? 'Swipe up' : 'Scroll'} for ${NAMES[i + 1]}`;
 }
 
-function go(to) {                            // keys, tabs and buttons play straight through
-  if (tr || intro) return;
+/* keys, tabs and buttons play straight through. Asked for another tab in the middle of a change, the
+   page doesn't ignore it: the tab lights up at once, the change under way hurries to its end (its
+   wings fold three times as fast, without a jump) and the one asked for follows. */
+let queued = null;
+function go(to) {
+  if (intro) return;
   if (to < 0 || to >= PANELS.length) { shakeT0 = performance.now(); return; }
+  if (tr) {
+    if (tr.scrub || tr.rewind) return;
+    queued = to === tr.to ? null : to;
+    setTabUI(queued == null ? tr.to : queued);
+    if (queued != null && !tr.hurry) { const now = performance.now(); tr.hurry = { t: timelineT(now), at: now }; }
+    return;
+  }
   if (to === current) return;
   begin(current, to, to > current ? 1 : -1, false);
 }
@@ -1172,6 +1199,7 @@ function timelineT(now) {
     tr.t += (tr.target - tr.t) * follow(dt, .06); return tr.t;
   }
   if (tr.rewind) return Math.max(0, tr.rewind.from - (now - tr.rewind.t0) / 1000 * 1.3 / slow());
+  if (tr.hurry) return tr.hurry.t + (now - tr.hurry.at) / 1000 * 3 / slow();   // another tab is waiting
   return (now - tr.t0) / 1000 / slow();
 }
 
@@ -1180,7 +1208,9 @@ function paintIn(t) {
   const el = PANELS[to];
   const W = stage.clientWidth, H = stage.clientHeight;
   if (m === 'flap') {
-    const r = ease.outCubic(clamp((t - .64) / .62));
+    // the new tab is laid out as soon as the old one has gone (by .34s, not .64s): the owl's flap is the
+    // show, but nobody should wait for it to read
+    const r = ease.outCubic(clamp((t - .34) / .5));
     const S = Math.min(140, r * 140), C = Math.max(0, r * 140 - 40);
     el.style.clipPath = dir > 0
       ? `polygon(0% 0%,50% 0%,100% 0%,100% ${S}%,50% ${C}%,0% ${S}%)`
@@ -1189,7 +1219,7 @@ function paintIn(t) {
     const pts = `0,${y(S)} ${W / 2},${y(C)} ${W},${y(S)}`;
     for (const l of edgeLine.children) l.setAttribute('points', pts);
     edgeLine.setAttribute('opacity', (r > 0 && r < 1 ? Math.sin(Math.PI * r) : 0).toFixed(3));
-    staggerKids(kids, t, .72, dir);
+    staggerKids(kids, t, .4, dir);
   } else {
     el.style.opacity = clamp((t - .15) / .3);
   }
@@ -1197,7 +1227,7 @@ function paintIn(t) {
 
 function staggerKids(kids, t, t0, dir) {
   kids.forEach((k, i) => {
-    const c = clamp((t - t0 - i * .07) / .45), e = ease.outCubic(c);
+    const c = clamp((t - t0 - i * .06) / .4), e = ease.outCubic(c);
     k.style.opacity = c;
     k.style.transform = `translateY(${(1 - e) * -16 * dir}px)`;
   });
@@ -1238,6 +1268,7 @@ function stepTransition(now) {
     if (outEl) { outEl.classList.remove('is-active'); clearStyles(outEl); }
     edgeLine.setAttribute('opacity', 0);
     tr = null; needQuiet = true;
+    if (queued != null) { const q = queued; queued = null; if (q !== current) begin(current, q, q > current ? 1 : -1, false); }
     return null;
   }
   return tr.mode === 'flap' && tr.owl ? t : null;
@@ -1310,7 +1341,11 @@ addEventListener('keydown', e => {
   else if (e.key === 'End') go(PANELS.length - 1);
 });
 
-TABS.forEach((b, i) => b.addEventListener('click', () => go(i)));
+TABS.forEach((b, i) => {
+  b.addEventListener('click', () => go(i));
+  b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') tree.peek(i, true); });
+  b.addEventListener('pointerleave', () => tree.peek(i, false));
+});
 document.querySelectorAll('[data-go]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); go(+a.dataset.go); }));
 
 // where the owl looks: the mouse, or a finger on the screen
