@@ -71,21 +71,10 @@ body{font-family:var(--text);font-size:16px;line-height:1.5;-webkit-font-smoothi
 header{position:fixed;top:0;left:0;right:0;height:var(--header);z-index:6;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,3vw,32px)}
 /* the primary wordmark, taken from the identity deck (lens O, MEDIA & ADVERTISING) */
 .wordmark{display:block;line-height:0}
-.wordmark img{display:block;height:36px;width:auto}
+.wordmark img{display:block;height:clamp(36px,2.2vw,44px);width:auto}
 .wordmark:focus-visible{outline:1px solid var(--bone);outline-offset:6px}
-.signoff{display:block;width:30px;height:auto;margin:34px auto 0}
-.signoff + .fine{margin-top:10px}
-.head-cta{font:600 14px/1 var(--text);color:var(--bone);text-decoration:none;padding:9px 0;border-bottom:2px solid var(--ruby)}
+.head-cta{font:600 clamp(14px,.45vw + 8px,16px)/1 var(--text);color:var(--bone);text-decoration:none;padding:9px 0;border-bottom:2px solid var(--ruby)}
 .head-cta:hover{border-color:var(--bone)}
-.head-r{display:flex;align-items:center;gap:clamp(16px,2.4vw,28px)}
-/* the sound switch: four bars, flat and quiet when off, moving like a flame when on */
-.snd{all:unset;cursor:pointer;display:flex;align-items:flex-end;gap:2.5px;height:16px;padding:10px 6px;opacity:.55;transition:opacity .25s}
-.snd:hover,.snd.on{opacity:1}
-.snd:focus-visible{outline:1px solid var(--bone);outline-offset:2px}
-.snd i{display:block;width:2px;height:3px;border-radius:1px;background:var(--bone);transition:height .3s}
-.snd.on i{background:var(--ruby);animation:flick 1.1s ease-in-out infinite}
-.snd.on i:nth-child(2){animation-delay:-.4s}.snd.on i:nth-child(3){animation-delay:-.75s}.snd.on i:nth-child(4){animation-delay:-.2s}
-@keyframes flick{0%,100%{height:4px}35%{height:14px}60%{height:8px}80%{height:12px}}
 .head-cta:focus-visible{outline:1px solid var(--bone);outline-offset:4px}
 
 /* the end of the world, behind everything: embers rising through a red haze, ash coming down */
@@ -111,7 +100,7 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header);z-index:6;displa
 
 .tabs{position:fixed;left:0;right:0;top:calc(var(--perch) + var(--tail, 14px));z-index:2;display:flex;justify-content:center;gap:clamp(16px,3.4vw,40px);padding:0 12px;transition:opacity .6s}
 /* the tabs: the open one bright and a little heavier, the others quieter until the pointer is on them */
-.tabs button{all:unset;cursor:pointer;position:relative;padding:12px 4px 10px;font:500 14px/1 var(--text);letter-spacing:.01em;color:#8d888e;transition:color .3s}
+.tabs button{all:unset;cursor:pointer;position:relative;padding:12px 4px 10px;font:500 clamp(14px,.5vw + 7px,16px)/1 var(--text);letter-spacing:.01em;color:#8d888e;transition:color .3s}
 .tabs button:hover{color:var(--bone)}
 .tabs button[aria-selected="true"]{color:var(--bone);font-weight:600}
 .tabs button:focus-visible{outline:1px solid var(--bone);outline-offset:4px}
@@ -124,20 +113,20 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header);z-index:6;displa
 .talons{transition:opacity .9s .3s}
 
 /* content */
-.stage{position:fixed;left:0;right:0;top:calc(var(--perch) + var(--tail, 14px) + 56px);bottom:0;z-index:1}
+.stage{position:fixed;left:0;right:0;top:calc(var(--perch) + var(--tail, 14px) + var(--stage-gap, 56px));bottom:0;z-index:1}
 .panel{position:absolute;inset:0;overflow-y:auto;scrollbar-width:none;padding:6px 20px 92px;visibility:hidden;touch-action:pan-y}
 .panel::-webkit-scrollbar{display:none}
 .panel.is-active,.panel.is-entering{visibility:visible}
-.inner{max-width:900px;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center}
+.inner{max-width:max(900px,52vw);margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center}
 /* headlines: bold, short, high impact */
-h1,h2{font-family:var(--display);font-weight:800;font-stretch:125%;font-size:clamp(24px,3.3vw,42px);line-height:1.08;letter-spacing:-.015em;color:var(--bone);max-width:20ch;text-wrap:balance}
+h1,h2{font-family:var(--display);font-weight:800;font-stretch:125%;font-size:clamp(24px,min(3.3vw,5.4vh),56px);line-height:1.08;letter-spacing:-.015em;color:var(--bone);max-width:20ch;text-wrap:balance}
 /* a headline's words, each in its own mask (a little room under it for descenders) */
 h1 .w,h2 .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.1em;margin-bottom:-.1em}
 h1 .w>span,h2 .w>span{display:inline-block}
-.lede{margin-top:var(--gap-s);font-size:clamp(15px,1.3vw,17px);line-height:1.6;color:var(--ash);max-width:50ch;text-wrap:pretty}
+.lede{margin-top:var(--gap-s);font-size:clamp(15px,min(1.3vw,2.1vh),19px);line-height:1.6;color:var(--ash);max-width:50ch;text-wrap:pretty}
 .actions{margin-top:var(--gap-l);display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
-.actions .btn{min-width:212px}                 /* side by side, the two buttons are the same width */
-.btn{--cut:10px;position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 24px;font:700 15px/1 var(--text);letter-spacing:.01em;color:var(--bone);text-decoration:none;background:var(--ruby);
+.actions .btn{min-width:clamp(212px,13vw,250px)}                 /* side by side, the two buttons are the same width */
+.btn{--cut:10px;position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;min-height:clamp(46px,2.5vw + 12px,54px);padding:0 clamp(24px,1.6vw,30px);font:700 clamp(15px,.4vw + 9.5px,17px)/1 var(--text);letter-spacing:.01em;color:var(--bone);text-decoration:none;background:var(--ruby);
   clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut));transition:background .2s}
 .btn:hover{background:var(--garnet)}
 /* the secondary button: a quiet white outline, so the red one is the only call to action */
@@ -148,10 +137,10 @@ h1 .w>span,h2 .w>span{display:inline-block}
 .btn:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--bone)}
 .btn.ghost:focus-visible::before{inset:3px}
 
-.services{list-style:none;margin-top:var(--gap-l);display:grid;grid-template-columns:repeat(4,1fr);width:min(100%,920px);text-align:left}
+.services{list-style:none;margin-top:var(--gap-l);display:grid;grid-template-columns:repeat(4,1fr);width:min(100%,max(920px,52vw));text-align:left}
 .services li{padding:2px 20px 2px 18px;border-left:1px solid var(--rule)}
-.services h3{font:700 16px/1.3 var(--text);color:var(--bone)}
-.services p{margin-top:8px;font-size:14px;line-height:1.55;color:var(--ash)}
+.services h3{font:700 clamp(16px,.4vw + 10.5px,18px)/1.3 var(--text);color:var(--bone)}
+.services p{margin-top:8px;font-size:clamp(14px,.3vw + 10px,16px);line-height:1.55;color:var(--ash)}
 
 .work{list-style:none;margin-top:var(--gap-l);width:min(100%,760px)}
 .work li{display:grid;grid-template-columns:1.1fr 1.3fr auto;align-items:baseline;gap:16px;padding:15px 4px;border-top:1px solid var(--rule);text-align:left}
@@ -160,7 +149,7 @@ h1 .w>span,h2 .w>span{display:inline-block}
 .w-what{font-size:15px;color:var(--ash)}
 .w-result{font-size:15px;font-weight:700;color:var(--ruby);text-align:right;white-space:nowrap}
 
-.fine{margin-top:34px;font-size:13px;color:#615c62}
+.fine{margin-top:var(--gap-l);font-size:13px;color:#615c62}
 /* the way on, at the end of a tab that has no buttons of its own */
 .next{margin-top:var(--gap-l);display:inline-flex;align-items:center;gap:10px;padding:10px 2px;font:600 15px/1 var(--text);color:var(--bone);text-decoration:none;border-bottom:1px solid var(--rule);transition:border-color .25s}
 .next span{color:var(--ruby);transition:transform .25s}
@@ -178,13 +167,12 @@ h1 .w>span,h2 .w>span{display:inline-block}
 
 body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-index:2;pointer-events:none;background:linear-gradient(rgba(8,8,10,0),var(--void) 72%);will-change:transform}
 .hint{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;color:var(--ash);pointer-events:none;white-space:nowrap;transition:opacity .4s;will-change:opacity}
+/* the hint shows only once the tab above it has been read to its end: it never covers what is left to read */
+.hint.away{opacity:0}
 .chev{width:9px;height:9px;border-left:1.5px solid var(--ash);border-top:1.5px solid var(--ash);transform:rotate(45deg);will-change:transform}
 .hint.back .chev{transform:rotate(225deg)}
 .hint.fresh .chev{animation:nudge 1.8s ease-in-out infinite}
 @keyframes nudge{50%{transform:translateY(-5px) rotate(45deg)}}
-
-/* the buttons lean toward the pointer as it comes near (the page sets how far, this eases it) */
-.btn,.head-cta,.next{transition-property:background,border-color,translate;transition-duration:.2s,.25s,.35s;transition-timing-function:ease,ease,cubic-bezier(.2,.8,.2,1)}
 
 @media (max-width:760px){
   .services{grid-template-columns:1fr 1fr;row-gap:20px}
@@ -203,7 +191,6 @@ body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-inde
 }
 @media (prefers-reduced-motion:reduce){
   .hint.fresh .chev{animation:none}
-  .snd.on i{animation:none;height:9px}
 }
 </style>
 </head>
@@ -216,10 +203,7 @@ body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-inde
 
 <header>
   <a class="wordmark" href="#" data-go="0"><img src="assets/wordmark.webp" width="640" height="173" alt="Shadows Media &amp; Advertising"></a>
-  <div class="head-r">
-    <button type="button" class="snd" id="sound" aria-pressed="false" aria-label="Sound" title="Sound"><i></i><i></i><i></i><i></i></button>
-    <a class="head-cta" href="#" data-go="4">Start a project</a>
-  </div>
+  <a class="head-cta" href="#" data-go="4">Start a project</a>
 </header>
 
 <canvas class="twigs" id="twigs" aria-hidden="true"></canvas>
@@ -288,7 +272,6 @@ body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:68px;z-inde
         <a class="btn" href="#">Email us</a>
         <a class="btn ghost" href="#">Message on WhatsApp</a>
       </div>
-      <img class="signoff" src="assets/lens.png" width="141" height="155" alt="">
       <p class="fine">© 2026 Shadows Media &amp; Advertising</p>
     </div>
   </section>
@@ -1169,9 +1152,14 @@ const tree = (() => {
 let owlCenterY = 0, eyeY = 0, owlPx = 1, perchPx = 0;
 function layout() {
   const w = innerWidth, h = innerHeight, header = 64;
-  let perch = Math.round(h * (w < 640 ? .43 : .48));
-  perch = Math.max(perch, header + 190);
+  // where the branch runs: lower on a tall screen, higher on a short one (a laptop, a phone on its side),
+  // so the owl gives the text the room it needs; and the gap under the tabs narrows with it
+  const share = w < 640 ? .43 - Math.max(0, 780 - h) / 1400 : .48 - Math.max(0, 900 - h) / 2400;
+  let perch = Math.round(h * share);
+  perch = Math.max(perch, header + (h < 600 ? 110 : 150));
   docEl.style.setProperty('--perch', perch + 'px');
+  // the content starts a measured distance under the tabs (their own height, then 14–26px of air)
+  docEl.style.setProperty('--stage-gap', Math.round($('.tabs').offsetHeight + clamp(h * .028, 14, 26)) + 'px');
   embers.resize(w, h);
   if (!gl) { owlCenterY = eyeY = perch / 2; docEl.style.setProperty('--tail', '40px'); embers.setCalm(perch + 76, Math.min(w / 2, 480)); $('#talons').style.display = 'none'; tree.build(perch, w, h, 40, .5); return; }
   const { renderer, camera, owlRoot } = gl;
@@ -1224,6 +1212,15 @@ function setTabUI(i) {
   hintText.textContent = last ? (coarse ? 'Swipe down to go back' : 'Scroll up to go back')
                               : `${coarse ? 'Swipe up' : 'Scroll'} for ${NAMES[i + 1]}`;
 }
+// the hint waits until the open tab has been read to its end: on a short screen it would cover the rest
+function updateHint() {
+  const p = PANELS[current], inner = p && p.querySelector('.inner');
+  if (!inner || tr) return;
+  // away while the end of the tab's content is still below the hint's top (where the hint would cover it)
+  hint.classList.toggle('away', inner.getBoundingClientRect().bottom > hint.getBoundingClientRect().top - 10);
+}
+PANELS.forEach(p => p.addEventListener('scroll', updateHint, { passive: true }));
+addEventListener('resize', updateHint);
 
 /* keys, tabs and buttons play straight through. Asked for another tab in the middle of a change, the
    page doesn't ignore it: the tab lights up at once, the change under way hurries to its end (its
@@ -1369,6 +1366,7 @@ function stepTransition(now) {
     edgeLine.setAttribute('opacity', 0);
     tr = null; needQuiet = true;
     if (queued != null) { const q = queued; queued = null; if (q !== current) begin(current, q, q > current ? 1 : -1, false); }
+    updateHint();
     return null;
   }
   return tr.mode === 'flap' && tr.owl ? t : null;
@@ -1469,117 +1467,13 @@ const idle = { x: .5, y: .4, roll: 0, next: 0 };
 let roll = 0, blinkAt = performance.now() + 2500, blinkTwice = false;
 const lidAt = u => u < 0 ? 0 : u < .07 ? u / .07 : u < .18 ? 1 - (u - .07) / .11 : 0;
 
-/* sound ------------------------------------------------------------------
-   Off until the visitor turns it on (the button in the header; the choice is remembered on this
-   device). Everything is made in the browser from noise, no files: the fire, a low rumble with a
-   soft hiss and its crackles, now and then a sharper snap; and a rush of air on every stroke of the
-   wings, drawn from how fast they move, so it keeps time with a scroll under the finger too. */
-const sound = (() => {
-  const btn = $('#sound');
-  let ctx = null, master = null, white = null, on = false, timer = 0;
-  const store = v => { try { localStorage.setItem('shadows-sound', v); } catch (e) {} };
-  const wanted = () => { try { return localStorage.getItem('shadows-sound') === '1'; } catch (e) { return false; } };
-  function noise(brown) {
-    const n = ctx.sampleRate * 3, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
-    let last = 0;
-    for (let i = 0; i < n; i++) { const w = Math.random() * 2 - 1; if (brown) { last = (last + .02 * w) / 1.02; d[i] = last * 3.5; } else d[i] = w; }
-    return b;
-  }
-  function loop(buf, filter, f, q, gain) {
-    const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain();
-    s.buffer = buf; s.loop = true; fl.type = filter; fl.frequency.value = f; fl.Q.value = q; g.gain.value = gain;
-    s.connect(fl).connect(g).connect(master); s.start();
-    return { fl, g };
-  }
-  function burst(at, dur, filter, f, q, gain) {                    // a short piece of noise, shaped
-    const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain();
-    s.buffer = white; fl.type = filter; fl.frequency.value = f; fl.Q.value = q;
-    g.gain.setValueAtTime(gain, at); g.gain.exponentialRampToValueAtTime(.0005, at + dur);
-    s.connect(fl).connect(g).connect(master); s.start(at, Math.random() * 2, dur + .02);
-  }
-  function crackle() {                                             // the next fifth of a second of the fire's crackle
-    const t0 = ctx.currentTime;
-    for (let k = 0; k < 4; k++) {
-      if (Math.random() < .42) burst(t0 + .05 * k + Math.random() * .05, .006 + Math.random() * .02, 'highpass', 1800 + Math.random() * 2500, .7, .04 + Math.random() * .16);
-      if (Math.random() < .03) burst(t0 + .05 * k + Math.random() * .05, .05, 'bandpass', 700 + Math.random() * 500, 1.2, .3);
-    }
-  }
-  function start() {
-    if (!ctx) {
-      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
-      ctx = new AC(); master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
-      white = noise(false);
-      loop(noise(true), 'lowpass', 380, .5, .5);                   // the fire's low rumble
-      const hiss = loop(white, 'bandpass', 1400, .6, .012);         // its hiss, breathing slowly
-      const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = .13; lg.gain.value = .008;
-      lfo.connect(lg).connect(hiss.g.gain); lfo.start();
-    }
-    ctx.resume();
-    master.gain.cancelScheduledValues(ctx.currentTime);
-    master.gain.setTargetAtTime(.55, ctx.currentTime, .4);
-    clearInterval(timer); timer = setInterval(crackle, 200);
-    return true;
-  }
-  function stop() {
-    clearInterval(timer);
-    if (!ctx) return;
-    master.gain.setTargetAtTime(0, ctx.currentTime, .12);
-    setTimeout(() => { if (!on && ctx) ctx.suspend(); }, 600);
-  }
-  function set(v) {
-    on = v && start();
-    if (!on) stop();
-    btn.setAttribute('aria-pressed', String(on)); btn.classList.toggle('on', on);
-    store(on ? '1' : '0');
-  }
-  btn.addEventListener('click', () => set(!on));
-  // remembered as on: it starts with the visitor's first touch or key (browsers allow sound only then)
-  if (wanted()) {
-    const first = () => { removeEventListener('pointerdown', first); removeEventListener('keydown', first); if (!on) set(true); };
-    addEventListener('pointerdown', first); addEventListener('keydown', first);
-  }
-  document.addEventListener('visibilitychange', () => { if (!ctx || !on) return; document.hidden ? (clearInterval(timer), ctx.suspend()) : start(); });
-  // a rush of air: a breath of noise swept up through a band, and a soft low thump under a strong stroke
-  function whoosh(k) {
-    if (!on || !ctx) return;
-    const t = ctx.currentTime, s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain();
-    s.buffer = white; fl.type = 'bandpass'; fl.Q.value = 1.1;
-    fl.frequency.setValueAtTime(260, t); fl.frequency.exponentialRampToValueAtTime(1100 + 600 * k, t + .22);
-    g.gain.setValueAtTime(.0005, t); g.gain.exponentialRampToValueAtTime(.14 + .3 * k, t + .07); g.gain.exponentialRampToValueAtTime(.0005, t + .5);
-    s.connect(fl).connect(g).connect(master); s.start(t, Math.random() * 2, .55);
-    if (k > .5) burst(t + .02, .18, 'lowpass', 160, .7, .35 * k);
-  }
-  return { whoosh, get on() { return on; } };
-})();
-
 /* render loop ----------------------------------------------------------- */
-let hx = 0, hy = 0, lastNow = 0, sPrev = 0, bPrev = 0, bend = 0, strokeArmed = true, openArmed = true, flare = 0, ctaHover = false;
+let hx = 0, hy = 0, lastNow = 0, sPrev = 0, bPrev = 0, bend = 0, flare = 0, ctaHover = false;
 // the calls to action: the owl watches them (its eyes flare on hover, flash on a click)
 const CTA = '.btn:not(.ghost), .head-cta, .next';
 document.addEventListener('pointerover', e => { if (e.pointerType === 'mouse' && e.target.closest && e.target.closest(CTA)) ctaHover = true; });
 document.addEventListener('pointerout', e => { if (e.target.closest && e.target.closest(CTA) && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(CTA))) ctaHover = false; });
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest(CTA)) flare = 1.8; });
-// the buttons lean toward the mouse when it comes near: a third of the way, at most 7px across and 5 down
-if (!coarse && !reduce) {
-  const MAG = [...document.querySelectorAll('.btn, .head-cta, .next')];
-  let raf = 0, px = 0, py = 0;
-  addEventListener('pointermove', e => {
-    if (e.pointerType !== 'mouse') return;
-    px = e.clientX; py = e.clientY;
-    if (raf) return;
-    raf = requestAnimationFrame(() => {
-      raf = 0;
-      for (const b of MAG) {
-        if (!b.offsetParent) continue;                               // not on screen (another tab)
-        const r = b.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-        const dx = px - cx, dy = py - cy, reach = Math.max(r.width, r.height) * .75 + 24;
-        const k = Math.max(0, 1 - Math.hypot(dx / (r.width / 2 + 24), dy / (r.height / 2 + 24)) / 1.5);
-        b.style.translate = k > 0 && Math.hypot(dx, dy) < reach * 1.6
-          ? `${clamp(dx * .3 * k, -7, 7).toFixed(1)}px ${clamp(dy * .3 * k, -5, 5).toFixed(1)}px` : '';
-      }
-    });
-  }, { passive: true });
-}
 const eo = [[0, 0], [0, 0]];                                        // each pupil's offset
 const eyeX = ART.eyes.map(e => (orig(ART.headBox[0] + e[0], 0)[0] - ART.axis) / ART.unit);   // eyes across the face, world units
 const glowEl = $('.glow');
@@ -1625,11 +1519,6 @@ function frame(now) {
   const open = s;
   glowEl.style.opacity = (.8 + .2 * open).toFixed(3);
   glowEl.style.transform = `scale(${(1 + .16 * open).toFixed(3)})`;
-  // the air the wings move: a rush on every stroke down, a softer one as they open and as they fold
-  if (sound.on) {
-    if (vb < -1.4 && strokeArmed) { sound.whoosh(Math.min(1, -vb / 6)); strokeArmed = false; } else if (vb > -.3) strokeArmed = true;
-    if (Math.abs(vs) > 1.1 && openArmed) { sound.whoosh(.25); openArmed = false; } else if (Math.abs(vs) < .25) openArmed = true;
-  }
   // the eyes flare while the pointer is on the call to action, and flash when it is clicked
   flare += ((ctaHover ? 1 : 0) - flare) * follow(dt, ctaHover ? .12 : .35);
   gl.eyeU.flare.value = reduce ? 0 : flare;
