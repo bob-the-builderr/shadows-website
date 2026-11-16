@@ -44,6 +44,18 @@ smaller than its images, which it is on nearly every screen.
 How the wings open, beat and fold, and how the body goes with them, is tuned by `SPREAD`, `BEAT`,
 `LIFT`, `LEAN` and `RIG` in `index.html`.
 
+The home-screen icon (`assets/apple-touch-icon.png`, the owl's head from `source/logo.png`) is built by
+`node build-icons.js` in the same folder.
+
+## If something fails
+
+- A page opened in a tab that isn't on screen yet is laid out once it gets a size, not before.
+- If the script fails before the page has opened, a small safety net at the top of `index.html` shows
+  the content plainly, with tabs and links that still switch sections.
+- With JavaScript off, every section is shown one under the other.
+- three.js is loaded from cdnjs with an `integrity` hash: if the file were ever altered, the browser
+  refuses it and the page goes on without the owl.
+
 ## Preview
 
 A preview for the client is published with GitHub Pages from `main`:
@@ -52,7 +64,14 @@ or two). It asks search engines not to index it (`<meta name="robots" content="n
 
 ## Before launch
 
-- In `index.html`, remove the `noindex` line, point `og:url` and `og:image` at the site's domain, and
-  add a canonical link.
-- Fill in the real work, the contact buttons (email, WhatsApp) and, in the search-engine data
-  (`application/ld+json`), the site's address, logo and social accounts.
+Still waiting on the client's details:
+
+- **Contact buttons** (`#p4` in `index.html`): the email address (`mailto:`) and the WhatsApp number
+  (`https://wa.me/<number in international format, digits only>`). Until then they lead nowhere.
+- **Domain**: remove the `noindex` line, point `og:url` and `og:image` at the domain, add
+  `<link rel="canonical">`, add `robots.txt` and `sitemap.xml`, and a `CNAME` file if it is served by
+  GitHub Pages.
+- **Search-engine data** (`application/ld+json`): the site's address, logo, email and social accounts
+  (`sameAs`).
+- **Work**: the Work tab asks visitors to request the portfolio; add real projects there if the client
+  wants them public.
